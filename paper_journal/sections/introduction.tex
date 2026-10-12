@@ -1,0 +1,65 @@
+\section{Introduction}
+\label{sec:intro}
+
+Machine-learning network intrusion detection systems (NIDS) classify network flows as benign or as one of several
+attack classes. On public benchmarks such as CIC-IDS2017~\cite{sharafaldin2018} they routinely report accuracies
+above 99\%. Most of these results come from random train/test splits, in which flows of the same attack session
+fall on both sides of the split, so the test asks whether the model recognises traffic it has effectively already
+seen. Network traffic is time-dependent, and estimates obtained with a chronological split differ from those of a
+random split~\cite{nismara2026temporal}. Careful sequence evaluations find that the evaluation protocol matters far
+more than the model architecture~\cite{moczkodan2026transformers}. These are instances of the temporal and spatial
+biases described for security classifiers in general~\cite{pendlebury2019tesseract,arp2022dos}.
+\Cref{sec:res-split} quantifies the gap on our data. The same gradient-boosting classifier reaches 99.8\%
+accuracy on a random split of CIC-IDS2017, the figure usually reported. Trained on the first 30\% of the capture
+and tested on the rest, it reaches 72.6\%, and its macro-F1 falls from 0.761 to 0.125, because eleven of the
+classes in the test period never occur in training.
+
+A deployed detector faces four conditions that random splits hide. First, \emph{new attack classes} appear after
+training. A closed-set model assigns them to some known class, most often to benign traffic, and nothing tells
+the operator that it is guessing. Second, \emph{labels are scarce}: an analyst can inspect only a small fraction of
+the flows. Third, \emph{labels are late}: ground truth for today's traffic arrives after today's decisions were
+made. Fourth, every model update is a \emph{deployment}, and a bad update degrades detection silently unless
+something checks it. Prior work addresses these conditions one at a time (\cref{sec:related}). Drift
+detectors~\cite{jordaney2017transcend,yang2021cade} flag drifting samples but do not adapt. Adaptive
+NIDS~\cite{andresini2021insomnia,zhang2024aoc,zhang2025ssf} update mostly binary detectors, often from their own
+pseudo-labels, and rarely model label delay. Active-learning methods~\cite{chen2023continuous,gupta2025netguard}
+choose which samples to label but assume a closed set of classes. Open-set NIDS~\cite{zhang2020osr,corsini2023ood}
+reject unknown traffic, but only on static splits.
+
+This article studies the four conditions together and asks five research questions:
+\begin{description}
+  \item[RQ1] How large is the gap between random-split and chronological evaluation for the same classifier?
+  \item[RQ2] Under one label budget and delay, which adaptation strategy keeps a multi-class open-world detector
+        most accurate, and at what false-positive cost?
+  \item[RQ3] How do the strategies behave when labels become ten times scarcer?
+  \item[RQ4] Which components of the proposed method matter, and do their effects carry over to datasets that were
+        not used for its design?
+  \item[RQ5] How sensitive are the conclusions to the label delay, the rejection thresholds and the classifier?
+\end{description}
+
+\textbf{Contributions.}
+\begin{enumerate}
+  \item An evaluation protocol for drift-aware open-world NIDS: chronological replay in windows, a label oracle
+        that enforces the same budget and delay for every method, and metrics that stay comparable when methods
+        learn different classes (\cref{sec:problem}). We show a property of open-world scoring that matters in
+        practice: a method that never learns a new class can outscore one that learns it imperfectly
+        (\cref{sec:res-budget}).
+  \item \nova{} (Novelty-aware, Open-world, Validated Adaptation), which combines class-conditional $k$-NN
+        rejection with per-class recalibration, a novelty-weighted and cluster-diverse query, agreement-checked
+        label propagation, a benign-weighted class-balanced memory, and a deployment guard with rollback
+        (\cref{sec:method}).
+  \item A comparison with eight methods, including re-implementations of four published approaches, on three
+        datasets from two laboratories, with all design decisions made on one development dataset and the other
+        two used only for evaluation (\cref{sec:setup,sec:results}).
+  \item Analyses that explain the results: a full ablation on all three datasets, per-class results, sensitivity
+        to label delay, rejection thresholds and classifier, and an offline test of whether a meta-learned
+        representation would help (\cref{sec:results}).
+  \item An open-source research console that stores the configuration, data hash and per-flow decision of every
+        run, so that each number in this article can be reproduced.
+\end{enumerate}
+
+\textbf{Relation to our conference paper.} \TBD{A preliminary version of this work appears in [conference
+reference]. This article adds the random-versus-chronological comparison (RQ1), the ablation on the two held-out
+datasets, the label-delay, threshold and classifier sensitivity studies, per-class and failure analyses, the
+representation-learning probe, an extended related-work survey and a full description of the protocol and
+method.}

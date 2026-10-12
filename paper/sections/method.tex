@@ -39,8 +39,8 @@ held-out flows predicted as $c$, and $\tau^{\text{knn}}_c$ a high quantile (99\%
 The unknown score is $s(x) = \max(s_{\text{msp}}, s_{\text{knn}})$ and the decision is \unk{} iff $s(x) > 1$.
 Conditioning the neighbour search on the predicted class follows multi-modal classes such as benign traffic, which
 a single centroid~\cite{yang2021cade} cannot. Thresholds are recomputed for every model version on the reference set
-plus the calibration store, so classes learned during deployment receive their own thresholds instead of the
-strictest fallback.
+plus the calibration store, so each learned class is calibrated on recent held-out flows instead of only on
+training-period traffic.
 
 \subsection{Query}
 \label{sec:query}

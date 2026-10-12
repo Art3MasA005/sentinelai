@@ -1,0 +1,82 @@
+loaded (400000, 79) benign label BENIGN device cuda
+
+=== cut W=5: pool classes [np.str_('BENIGN'), np.str_('FTP-Patator'), np.str_('SSH-Patator')]; novel in future: [np.str_('Bot'), np.str_('DDoS'), np.str_('DoS GoldenEye'), np.str_('DoS Hulk'), np.str_('DoS Slowhttptest'), np.str_('DoS slowloris'), np.str_('Infiltration'), np.str_('PortScan'), np.str_('Web Attack - Brute Force'), np.str_('Web Attack - Sql Injection'), np.str_('Web Attack - XSS')]
+  raw    benign FPR 0.030/0.059
+     Bot                          AUROC 0.667  TPR@1% 0.00  TPR@3% 0.01
+     DDoS                         AUROC 0.917  TPR@1% 0.03  TPR@3% 0.31
+     DoS GoldenEye                AUROC 0.873  TPR@1% 0.04  TPR@3% 0.26
+     DoS Hulk                     AUROC 0.856  TPR@1% 0.23  TPR@3% 0.33
+     DoS Slowhttptest             AUROC 0.971  TPR@1% 0.63  TPR@3% 0.90
+     DoS slowloris                AUROC 0.938  TPR@1% 0.24  TPR@3% 0.59
+     Infiltration                 AUROC 0.991  TPR@1% 1.00  TPR@3% 1.00
+     PortScan                     AUROC 0.920  TPR@1% 0.00  TPR@3% 0.03
+     Web Attack - Brute Force     AUROC 0.619  TPR@1% 0.00  TPR@3% 0.05
+     Web Attack - Sql Injection   AUROC 0.753  TPR@1% 0.00  TPR@3% 0.00
+     Web Attack - XSS             AUROC 0.577  TPR@1% 0.00  TPR@3% 0.03
+  proto  benign FPR 0.010/0.028
+     Bot                          AUROC 0.611  TPR@1% 0.00  TPR@3% 0.00
+     DDoS                         AUROC 0.911  TPR@1% 0.00  TPR@3% 0.00
+     DoS GoldenEye                AUROC 0.834  TPR@1% 0.24  TPR@3% 0.28
+     DoS Hulk                     AUROC 0.940  TPR@1% 0.10  TPR@3% 0.46
+     DoS Slowhttptest             AUROC 0.971  TPR@1% 0.05  TPR@3% 0.63
+     DoS slowloris                AUROC 0.970  TPR@1% 0.30  TPR@3% 0.65
+     Infiltration                 AUROC 0.979  TPR@1% 0.00  TPR@3% 1.00
+     PortScan                     AUROC 0.823  TPR@1% 0.01  TPR@3% 0.01
+     Web Attack - Brute Force     AUROC 0.828  TPR@1% 0.13  TPR@3% 0.20
+     Web Attack - Sql Injection   AUROC 0.990  TPR@1% 0.67  TPR@3% 1.00
+     Web Attack - XSS             AUROC 0.791  TPR@1% 0.02  TPR@3% 0.05
+  meta   benign FPR 0.014/0.030
+     Bot                          AUROC 0.625  TPR@1% 0.00  TPR@3% 0.00
+     DDoS                         AUROC 0.855  TPR@1% 0.00  TPR@3% 0.00
+     DoS GoldenEye                AUROC 0.749  TPR@1% 0.11  TPR@3% 0.28
+     DoS Hulk                     AUROC 0.899  TPR@1% 0.25  TPR@3% 0.27
+     DoS Slowhttptest             AUROC 0.969  TPR@1% 0.06  TPR@3% 0.74
+     DoS slowloris                AUROC 0.959  TPR@1% 0.31  TPR@3% 0.37
+     Infiltration                 AUROC 0.977  TPR@1% 0.00  TPR@3% 1.00
+     PortScan                     AUROC 0.863  TPR@1% 0.01  TPR@3% 0.04
+     Web Attack - Brute Force     AUROC 0.616  TPR@1% 0.18  TPR@3% 0.20
+     Web Attack - Sql Injection   AUROC 0.979  TPR@1% 0.67  TPR@3% 0.67
+     Web Attack - XSS             AUROC 0.538  TPR@1% 0.04  TPR@3% 0.08
+  (46s)
+
+=== cut W=25: pool classes [np.str_('BENIGN'), np.str_('DoS GoldenEye'), np.str_('DoS Hulk'), np.str_('DoS Slowhttptest'), np.str_('DoS slowloris'), np.str_('FTP-Patator'), np.str_('SSH-Patator')]; novel in future: [np.str_('Bot'), np.str_('DDoS'), np.str_('Infiltration'), np.str_('PortScan'), np.str_('Web Attack - Brute Force'), np.str_('Web Attack - Sql Injection'), np.str_('Web Attack - XSS')]
+  raw    benign FPR 0.031/0.052
+     Bot                          AUROC 0.638  TPR@1% 0.00  TPR@3% 0.01
+     DDoS                         AUROC 0.915  TPR@1% 0.16  TPR@3% 0.31
+     Infiltration                 AUROC 0.988  TPR@1% 1.00  TPR@3% 1.00
+     PortScan                     AUROC 0.902  TPR@1% 0.00  TPR@3% 0.00
+     Web Attack - Brute Force     AUROC 0.531  TPR@1% 0.00  TPR@3% 0.05
+     Web Attack - Sql Injection   AUROC 0.735  TPR@1% 0.00  TPR@3% 0.00
+     Web Attack - XSS             AUROC 0.475  TPR@1% 0.00  TPR@3% 0.03
+  proto  benign FPR 0.008/0.028
+     Bot                          AUROC 0.529  TPR@1% 0.00  TPR@3% 0.00
+     DDoS                         AUROC 0.993  TPR@1% 0.66  TPR@3% 0.98
+     Infiltration                 AUROC 0.872  TPR@1% 0.00  TPR@3% 0.00
+     PortScan                     AUROC 0.716  TPR@1% 0.01  TPR@3% 0.02
+     Web Attack - Brute Force     AUROC 0.736  TPR@1% 0.14  TPR@3% 0.18
+     Web Attack - Sql Injection   AUROC 0.996  TPR@1% 0.67  TPR@3% 1.00
+     Web Attack - XSS             AUROC 0.682  TPR@1% 0.03  TPR@3% 0.06
+  meta   benign FPR 0.007/0.024
+     Bot                          AUROC 0.575  TPR@1% 0.00  TPR@3% 0.00
+     DDoS                         AUROC 0.992  TPR@1% 0.70  TPR@3% 0.92
+     Infiltration                 AUROC 0.901  TPR@1% 0.00  TPR@3% 0.00
+     PortScan                     AUROC 0.715  TPR@1% 0.01  TPR@3% 0.03
+     Web Attack - Brute Force     AUROC 0.760  TPR@1% 0.14  TPR@3% 0.14
+     Web Attack - Sql Injection   AUROC 0.996  TPR@1% 0.67  TPR@3% 1.00
+     Web Attack - XSS             AUROC 0.712  TPR@1% 0.03  TPR@3% 0.06
+  (64s)
+
+=== cut W=45: pool classes [np.str_('BENIGN'), np.str_('DoS GoldenEye'), np.str_('DoS Hulk'), np.str_('DoS Slowhttptest'), np.str_('DoS slowloris'), np.str_('FTP-Patator'), np.str_('SSH-Patator'), np.str_('Web Attack - Brute Force'), np.str_('Web Attack - XSS')]; novel in future: [np.str_('Bot'), np.str_('DDoS'), np.str_('PortScan')]
+  raw    benign FPR 0.056/0.082
+     Bot                          AUROC 0.655  TPR@1% 0.00  TPR@3% 0.02
+     DDoS                         AUROC 0.890  TPR@1% 0.01  TPR@3% 0.29
+     PortScan                     AUROC 0.866  TPR@1% 0.00  TPR@3% 0.00
+  proto  benign FPR 0.008/0.026
+     Bot                          AUROC 0.600  TPR@1% 0.00  TPR@3% 0.00
+     DDoS                         AUROC 0.981  TPR@1% 0.29  TPR@3% 0.66
+     PortScan                     AUROC 0.760  TPR@1% 0.01  TPR@3% 0.03
+  meta   benign FPR 0.010/0.025
+     Bot                          AUROC 0.598  TPR@1% 0.00  TPR@3% 0.00
+     DDoS                         AUROC 0.976  TPR@1% 0.19  TPR@3% 0.73
+     PortScan                     AUROC 0.725  TPR@1% 0.01  TPR@3% 0.02
+  (74s)

@@ -1,0 +1,62 @@
+{
+ "CIC17": {
+  "chronological": {
+   "macro_f1": 0.12529076348924706,
+   "weighted_f1": 0.6108599234057638,
+   "accuracy": 0.72595,
+   "test_classes_unseen_in_training": 11
+  },
+  "random": {
+   "macro_f1": 0.7611972090368427,
+   "weighted_f1": 0.9981744579058708,
+   "accuracy": 0.9982035714285714,
+   "test_classes_unseen_in_training": 0.0
+  },
+  "random_std": {
+   "macro_f1": 0.0024820952988232944,
+   "weighted_f1": 6.584404613667853e-05,
+   "accuracy": 6.355403721445024e-05,
+   "test_classes_unseen_in_training": 0.0
+  }
+ },
+ "IDS18": {
+  "chronological": {
+   "macro_f1": 0.07066935300941245,
+   "weighted_f1": 0.7805059025786306,
+   "accuracy": 0.849525,
+   "test_classes_unseen_in_training": 7
+  },
+  "random": {
+   "macro_f1": 0.6924771569012426,
+   "weighted_f1": 0.980338698520827,
+   "accuracy": 0.9846190476190476,
+   "test_classes_unseen_in_training": 0.0
+  },
+  "random_std": {
+   "macro_f1": 0.0042852428551782415,
+   "weighted_f1": 0.00034671448462853227,
+   "accuracy": 3.090655948989097e-05,
+   "test_classes_unseen_in_training": 0.0
+  }
+ },
+ "UNSW": {
+  "chronological": {
+   "macro_f1": 0.43219168598414326,
+   "weighted_f1": 0.9658714255760332,
+   "accuracy": 0.9643535714285715,
+   "test_classes_unseen_in_training": 0
+  },
+  "random": {
+   "macro_f1": 0.49867316960398805,
+   "weighted_f1": 0.97682344579271,
+   "accuracy": 0.9777404761904762,
+   "test_classes_unseen_in_training": 0.0
+  },
+  "random_std": {
+   "macro_f1": 0.017519674757693376,
+   "weighted_f1": 8.200221630458707e-05,
+   "accuracy": 2.3389146076655247e-05,
+   "test_classes_unseen_in_training": 0.0
+  }
+ }
+}

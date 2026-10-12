@@ -1,0 +1,126 @@
+\section{Experimental setup}
+\label{sec:setup}
+
+\subsection{Datasets}
+\Cref{tab:datasets} summarises the three datasets. Each is replayed in timestamp order. From each we take 400{,}000
+flows evenly spaced over time, deterministically, so that every method and seed sees the same data. The first
+30\% form the training period. The last 20\% of the training period is the reference set (\cref{sec:problem}),
+and the remaining 280{,}000 flows form 70 windows of 4{,}000 flows. Rows without a valid timestamp or label are
+skipped when reading.
+
+\textbf{CIC-IDS2017}~\cite{sharafaldin2018} covers five working days of a testbed network. We use the
+\texttt{TrafficLabelling} CSVs, the variant that keeps timestamps; their afternoon times are written without
+AM/PM, and we restore them from the capture schedule. The training period (Monday and Tuesday morning) contains
+only benign traffic and FTP-Patator, so every attack in the stream is new.
+
+\textbf{CSE-CIC-IDS2018} covers ten days with a larger network and attack set. We use the ``Processed Traffic
+Data for ML'' CSVs, thinned to one row in eight per file before sampling to keep the replay tractable. Seven
+attack classes occur in the training period and seven appear later. Several day files of the published CSVs are
+truncated at 1{,}048{,}575 rows, a spreadsheet limit, which we leave as is.
+
+\textbf{UNSW-NB15}~\cite{moustafa2015unsw} was captured on two days, about four weeks apart, with a different
+tool chain. Every class already occurs on the first day, so no class would be new in a chronological replay. As is
+common in open-set NIDS work, we remove four attack classes (DoS, Reconnaissance, Shellcode and Worms) from the
+training period. They appear in the stream as unknown attacks. The other classes are known, but their February
+traffic differs from the January training traffic.
+
+\begin{table}[t]
+\centering
+\caption{Datasets (after replay sampling: 400k flows, 70 windows of 4{,}000 flows).}
+\label{tab:datasets}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+ & CIC-IDS2017 & CSE-CIC-IDS2018 & UNSW-NB15 \\
+\midrule
+Source flows & 2.83\,M & 16.2\,M & 2.54\,M \\
+Days covered & 5 & 10 & 2 \\
+Classes (incl.\ benign) & 15 & 15 & 10 \\
+Attack classes in training & 1 & 7 & 5 \\
+New in stream & 12 & 7 & 4 (held out) \\
+Model input features & 79 & 78 & 97 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Preprocessing.} Identifier columns (flow ID, source and destination address, source port, timestamps;
+for UNSW-NB15 also the destination port) are dropped, so the model cannot memorise hosts. Non-finite values are replaced by the training-period median.
+Numeric features are transformed with $\operatorname{sign}(v)\log(1+|v|)$ to tame heavy tails, then standardised
+with training-period statistics. Categorical fields (UNSW-NB15's protocol, state and service) are one-hot encoded
+with an ``unseen'' bucket. Nothing is fitted on the stream.
+
+\subsection{Label regime and classifier}
+The main budget is $B = 10\%$ of each window (400 labels), and the low budget $B = 1\%$ (40 labels). The delay is
+$\delta = 1$ window, and \cref{sec:res-sens} varies it. Every method that uses labels receives exactly the same
+number; INSOMNIA uses none by design.
+
+All methods use the same classifier, scikit-learn's histogram gradient boosting with 150 iterations and L2
+regularisation 1.0. Classes with fewer than five labelled flows are left out of training and stay \unk{}. All
+methods also use the same open-world detector (\cref{sec:unknown}), except in the detector ablation. The
+differences between methods therefore come from the adaptation strategy alone. \Cref{sec:res-sens} repeats the
+main comparison with a two-layer MLP.
+
+\subsection{Baselines}
+\label{sec:baselines}
+We compare with four generic strategies and four methods re-implemented from the literature. All replay memories
+hold 20{,}000 flows and are initialised from the training period.
+\begin{description}
+  \item[Static.] The initial model, never updated: the lower bound.
+  \item[Periodic retrain.] From scratch every five windows, on the training data plus the last five labelled
+        windows; always deployed.
+  \item[Continual replay.] A uniform reservoir memory; retrained whenever labels arrive; always deployed.
+  \item[Guarded selective.] Retrained only when a drift detector (Kolmogorov--Smirnov test, population stability
+        index or mean-confidence drop) fires or the \unk{} rate exceeds 15\%. The newest labelled window is used as
+        a hold-out, the candidate must pass the same gain and forgetting checks as in \nova{}, and a deployed model
+        can be rolled back. It shows what a guard achieves without \nova{}'s other components.
+  \item[Uncertainty sampling.] Least-confidence active learning on top of continual replay. It is the standard
+        query baseline of the active-learning works above and INSOMNIA's ``uncertainty sampling + oracle'' upper
+        bound~\cite{andresini2021insomnia}.
+  \item[INSOMNIA]~\cite{andresini2021insomnia}, multi-class: after each window, the least-confident 50\% of its
+        flows are labelled by a nearest-centroid estimator and added to a pseudo-labelled memory; no analyst
+        labels are used.
+  \item[NetGuard PS]~\cite{gupta2025netguard}: NetGuard's density-aware prior selection, with one diagonal
+        Gaussian mixture (up to eight components) on the labelled memory and one on the new window. The flows with
+        the largest log-density ratio are labelled. The generative minority augmentation, which needs GPU hours
+        per cycle, is not reproduced.
+  \item[CBRS replay]~\cite{chrysakis2020online,amalapuram2023augmented}: the class-balancing reservoir memory used
+        for NIDS replay, with uniformly sampled labels, retrained whenever labels arrive.
+\end{description}
+
+\subsection{Development and held-out data}
+All design decisions, including the components of \nova{}, its hyper-parameters and the CIC-IDS2017 ablation,
+were made on CIC-IDS2017. CSE-CIC-IDS2018 and UNSW-NB15 were not used for any design decision. We only checked
+their class composition with one run of the static model, which revealed that no UNSW-NB15 class is new without a
+hold-out. Both datasets are evaluated with the configuration frozen on CIC-IDS2017. The analyses that we ran on
+them after the main results (the ablations and the low budget) change nothing in the method; we mark them as such.
+
+\subsection{Experiments, statistics and implementation}
+\Cref{tab:experiments} maps the experiments to the research questions. Each configuration runs with three seeds;
+the seed changes model initialisation, label sampling and clustering, not the data. We report the mean and
+standard deviation over seeds. We also report a paired Wilcoxon signed-rank test on the per-window OW-F1 of
+\nova{} against each method, averaged over seeds; windows are autocorrelated, so the $p$-values are indicative.
+
+Everything is implemented in Python (scikit-learn, NumPy) inside an open-source research console that stores
+the configuration, data hash, model versions, adaptation decisions and per-flow predictions of every run. Tree
+models run on a 16-core CPU; the MLP uses PyTorch 2.14.1 with CUDA 13.0 on an RTX 3060 GPU with deterministic
+kernels. In total, the article reports \TBD{N} runs.
+
+\begin{table}[t]
+\centering
+\caption{Experiments. Unless stated otherwise: budget 10\%, delay 1, gradient boosting, three seeds.}
+\label{tab:experiments}
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llll@{}}
+\toprule
+RQ & Experiment & Datasets & Section \\
+\midrule
+RQ1 & random vs.\ chronological split, static classifier & all & \ref{sec:res-split} \\
+RQ2 & nine methods & all & \ref{sec:res-main} \\
+RQ3 & budget 1\%, seven label-using methods & all & \ref{sec:res-budget} \\
+RQ4 & six one-component ablations; centroid vs.\ $k$-NN detector & all; CIC-IDS2017 & \ref{sec:res-ablation} \\
+RQ5 & delay 0 and 3; stricter and more lenient thresholds; MLP & CIC-IDS2017 & \ref{sec:res-sens} \\
+-- & per-class results; representation-learning probe & all; CIC-IDS2017 & \ref{sec:res-perclass}, \ref{sec:res-meta} \\
+\bottomrule
+\end{tabular}}
+\end{table}

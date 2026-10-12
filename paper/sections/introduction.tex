@@ -1,40 +1,28 @@
 \section{Introduction}
 \label{sec:intro}
 
-Flow-based intrusion detectors routinely report accuracies above 99\% on public benchmarks such as
-CIC-IDS2017~\cite{sharafaldin2018}. Most of these results come from random train/test splits, in which flows
-of the same attack session appear on both sides of the split. Network traffic is time-dependent, and
-performance estimates obtained with a chronological split differ from those of a random
-split~\cite{nismara2026temporal}. Careful sequence evaluations also find that model
-architecture matters far less than the evaluation protocol~\cite{moczkodan2026transformers}. These are two
-of the pitfalls catalogued by Arp et al.~\cite{arp2022dos} and Pendlebury et al.~\cite{pendlebury2019tesseract}.
+Flow-based intrusion detectors routinely report accuracies above 99\% on benchmarks such as
+CIC-IDS2017~\cite{sharafaldin2018}, mostly with random train/test splits in which flows of one attack session
+fall on both sides. Network traffic is time-dependent, and estimates from a chronological split differ from those
+of a random split~\cite{nismara2026temporal}; careful sequence evaluations find that the protocol matters far more
+than the model architecture~\cite{moczkodan2026transformers}.
 
-A deployed detector faces three further conditions that most evaluations leave out.
-\emph{New attack classes} appear after training: a model that only knows the classes it was trained on assigns
-them to some known class, most often to benign traffic. \emph{Labels are scarce}: an analyst can inspect a small
-fraction of the flows. \emph{Labels are late}: ground truth for today's traffic arrives after today's decisions
-were made. Finally, every model update is a deployment, and a bad update degrades detection silently unless
-something checks it.
+A deployed detector faces three further conditions. \emph{New attack classes} appear after training, and a
+closed-set model assigns them to a known class, most often benign. \emph{Labels are scarce}: an analyst inspects
+a small fraction of the flows. \emph{Labels are late}: ground truth arrives after the decisions were made. In
+addition, every model update is a deployment, and a bad one degrades detection silently. Prior work handles
+these conditions one at a time (\cref{sec:related}).
 
-Prior work addresses parts of this picture. Drift detectors and rejection
-schemes~\cite{jordaney2017transcend,barbero2022transcending,yang2021cade} flag drifting samples but do not
-adapt. Adaptive NIDS~\cite{andresini2021insomnia,zhang2024aoc,zhang2025ssf,mousavipour2025shift} update a
-binary detector, often from pseudo-labels, and rarely model label delay. Active-learning
-approaches~\cite{chen2023continuous,gupta2025netguard} choose which samples to label but assume a closed set
-of classes. Open-set NIDS~\cite{zhang2020osr,corsini2023ood} reject unknown traffic on static splits.
-
-\textbf{This paper.} We evaluate all of these concerns at once and propose \nova{} (Novelty-aware, Open-world,
-Validated Adaptation). Our contributions are:
+We study them together and propose \nova{} (Novelty-aware, Open-world, Validated Adaptation). Our
+contributions are:
 \begin{enumerate}
-  \item An evaluation protocol for drift-aware open-world NIDS: chronological replay in windows, a label oracle
-        that enforces a fixed budget and delay for every method, and metrics that stay comparable when methods
-        learn different classes (\cref{sec:problem}).
+  \item a protocol for drift-aware open-world NIDS: chronological replay in windows, a label oracle that enforces
+        one budget and delay for every method, and metrics that stay comparable when methods learn different
+        classes (\cref{sec:problem});
   \item \nova{}, which combines class-conditional $k$-NN rejection with per-class recalibration, a
-        novelty-weighted and cluster-diverse query, agreement-checked label propagation, a benign-weighted
-        class-balanced memory, and a deployment guard with rollback (\cref{sec:method}).
-  \item Re-implementations of four published approaches under the same protocol, model and labelling cost, an
-        ablation of every \nova{} component, and results on three datasets from two laboratories
-        (\cref{sec:setup,sec:results}).
-  \item An open-source research console (SentinelAI) that stores the configuration, data hash and per-flow
-        decision of every run, so each number in this paper can be reproduced.
+        novelty-weighted, cluster-diverse query, agreement-checked label propagation, a class-balanced memory
+        and a guarded deployment with rollback (\cref{sec:method});
+  \item a comparison with eight methods, including four re-implemented from the literature, on three datasets,
+        with an ablation of every component (\cref{sec:setup,sec:results}). Code, configurations and per-flow
+        predictions will be released with the final version.
 \end{enumerate}

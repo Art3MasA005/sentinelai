@@ -1,0 +1,65 @@
+{
+ "group": "CIC17 review-rate b0.10",
+ "base": "../experiments/configs/cic2017_static.json",
+ "seeds": [
+  1,
+  2,
+  3
+ ],
+ "set": {
+  "store_features": false,
+  "flow_storage": "file",
+  "openworld.method": "msp+knn",
+  "adaptation.buffer_size": 20000
+ },
+ "variants": [
+  {
+   "name": "nova strict",
+   "set": {
+    "adaptation.method": "nova",
+    "openworld.msp_quantile": 0.01,
+    "openworld.distance_quantile": 0.995
+   }
+  },
+  {
+   "name": "cbrs_replay strict",
+   "set": {
+    "adaptation.method": "cbrs_replay",
+    "openworld.msp_quantile": 0.01,
+    "openworld.distance_quantile": 0.995
+   }
+  },
+  {
+   "name": "static strict",
+   "set": {
+    "adaptation.method": "static",
+    "openworld.msp_quantile": 0.01,
+    "openworld.distance_quantile": 0.995
+   }
+  },
+  {
+   "name": "nova lenient",
+   "set": {
+    "adaptation.method": "nova",
+    "openworld.msp_quantile": 0.05,
+    "openworld.distance_quantile": 0.97
+   }
+  },
+  {
+   "name": "cbrs_replay lenient",
+   "set": {
+    "adaptation.method": "cbrs_replay",
+    "openworld.msp_quantile": 0.05,
+    "openworld.distance_quantile": 0.97
+   }
+  },
+  {
+   "name": "static lenient",
+   "set": {
+    "adaptation.method": "static",
+    "openworld.msp_quantile": 0.05,
+    "openworld.distance_quantile": 0.97
+   }
+  }
+ ]
+}

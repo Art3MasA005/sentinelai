@@ -1,0 +1,60 @@
+{
+ "group": "IDS18 ablation b0.10",
+ "base": "../experiments/configs/cic2018_static.json",
+ "seeds": [
+  1,
+  2,
+  3
+ ],
+ "set": {
+  "store_features": false,
+  "flow_storage": "file",
+  "openworld.method": "msp+knn",
+  "adaptation.buffer_size": 20000
+ },
+ "variants": [
+  {
+   "name": "nova -active query",
+   "set": {
+    "adaptation.method": "nova",
+    "adaptation.active_selection": false
+   }
+  },
+  {
+   "name": "nova -propagation",
+   "set": {
+    "adaptation.method": "nova",
+    "adaptation.propagate": false
+   }
+  },
+  {
+   "name": "nova -balanced memory",
+   "set": {
+    "adaptation.method": "nova",
+    "adaptation.class_balanced_memory": false
+   }
+  },
+  {
+   "name": "nova -guard",
+   "set": {
+    "adaptation.method": "nova",
+    "adaptation.validation_guard": false,
+    "adaptation.rollback": false
+   }
+  },
+  {
+   "name": "nova -calibration store",
+   "set": {
+    "adaptation.method": "nova",
+    "adaptation.calib_per_class": 0
+   }
+  },
+  {
+   "name": "nova -recency weight",
+   "set": {
+    "adaptation.method": "nova",
+    "adaptation.recent_weight": 1.0
+   }
+  }
+ ]
+}

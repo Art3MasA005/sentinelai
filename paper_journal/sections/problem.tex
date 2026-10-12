@@ -1,0 +1,81 @@
+\section{Problem setting, protocol and metrics}
+\label{sec:problem}
+
+\subsection{Stream, decisions and labels}
+Flows $(x_t, y_t)$ arrive in timestamp order, where $x_t \in \mathbb{R}^d$ are flow features and $y_t \in
+\mathcal{C}$ is the flow's class (benign or an attack type). A model is trained on an initial period whose
+classes $\mathcal{C}_0 \subset \mathcal{C}$ are known. The rest of the stream is processed in consecutive windows
+$W_1, W_2, \dots$ of $n$ flows.
+
+For each flow, the deployed model $f$ outputs either a class it knows or \unk{}. We give \unk{} a precise
+operational meaning: ``unfamiliar to this model, send to an analyst''. It is neither an alarm nor a statement
+that the flow is malicious. A deployed NIDS has to make this distinction, because benign traffic that the model
+has never seen should be reviewed, not blocked.
+
+After predicting window $W_w$, a method may request ground truth for at most $B \cdot n$ of its flows (the label
+\emph{budget} $B$). The labels arrive at window $w + \delta$ (the label \emph{delay} $\delta$). A label oracle is
+the only path to ground truth: it enforces the budget and the delay, refuses a second request for the same
+window, and counts every label it hands out. Methods that do not choose which flows to label receive a uniform
+random sample of the budget, so every method that uses labels receives exactly the same number. A method may
+replace the deployed model after any window; the new model only affects later windows.
+
+\subsection{Integrity rules}
+The protocol enforces the following rules in code and records them in every run:
+\begin{enumerate}
+  \item \emph{No look-ahead.} Preprocessing statistics (log transform and standardisation) are fitted on the
+        training period only; the stream is never used to fit anything before it is predicted.
+  \item \emph{Fixed reference set.} The last 20\% of the training period is held out as a reference set. It is
+        used to calibrate the initial rejection thresholds and to measure forgetting. It keeps only classes that
+        occur in the fitted part of the training period: a class that first appears in the reference period
+        (SSH-Patator in CIC-IDS2017) was never learned, and keeping it would turn ``forgetting'' into a measure of
+        unknown-attack detection.
+  \item \emph{One labelling path.} Strategies obtain labels only through the oracle, with the same budget and
+        delay.
+  \item \emph{Development and held-out data.} All design decisions are made on one dataset; the others are used
+        only with the frozen configuration (\cref{sec:setup}).
+\end{enumerate}
+
+\subsection{Metrics}
+\label{sec:metrics}
+Let $\hat{y}_t$ be the decision for flow $t$ and $K_t$ the set of classes known to the model that scored it.
+Standard open-set macro-F1 maps every flow of an unknown class to a single \unk{} label. Two methods that learn
+different classes are then scored on different label sets, and their scores cannot be compared. We therefore use
+a fixed class set.
+
+\textbf{Open-world macro-F1 (OW-F1).} A decision is credited as correct if
+\begin{equation}
+\label{eq:owcredit}
+\text{correct}_t = \bigl[\hat{y}_t = y_t\bigr] \;\lor\; \bigl[y_t \notin K_t \land \hat{y}_t = \unk{}\bigr],
+\end{equation}
+that is, if it names the true class, or if the true class is unknown to the deployed model and the decision is
+\unk{}. Per-class precision and recall are computed over the fixed set $\mathcal{C}$ of all true classes in the
+stream, with credited \unk{} decisions counted as the true class, and OW-F1 is their unweighted mean.
+
+Equation~\eqref{eq:owcredit} has a property that matters when reading the results. The credit for \unk{} lasts
+only while a class is unknown. A method that never learns a new class and keeps rejecting it is credited in full
+for that class. A method that learns the class imperfectly is scored on its class-level F1, which can be lower. We
+report this deliberately: rejecting an attack the system cannot name is a safe outcome for an operator, but it
+also means that OW-F1 alone cannot distinguish ``learned nothing'' from ``learned well''. We therefore always
+read it together with the binary detection metrics and the per-class results (\cref{sec:res-budget,sec:res-perclass}).
+
+\textbf{AUT.} The area under the per-window OW-F1 curve, normalised to $[0,1]$~\cite{pendlebury2019tesseract}:
+\begin{equation}
+\mathrm{AUT} = \frac{1}{N-1} \sum_{w=1}^{N-1} \frac{F_w + F_{w+1}}{2},
+\end{equation}
+where $F_w$ is the OW-F1 of window $w$ and $N$ the number of windows. AUT weights every window equally, whereas
+the pooled OW-F1 weights every class equally over the whole stream; a short-lived class therefore moves OW-F1 much
+more than AUT.
+
+\textbf{Binary detection.} A flow is \emph{flagged} when its decision is not benign, i.e.\ an attack class or
+\unk{}; both reach an analyst. Detection F1, recall and false-positive rate (FPR, the share of benign flows that
+are flagged) are comparable with binary NIDS work, and FPR is the analyst's review load from benign traffic.
+
+\textbf{Unknown AUROC.} How well the open-world score $s(x)$ (\cref{sec:unknown}) ranks flows of classes unknown
+to the deployed model above flows of known classes, independently of the threshold.
+
+\textbf{Forgetting.} The largest drop of macro-F1 on the reference set below its running maximum over the
+stream, i.e.\ $\max_w \bigl(\max_{v \le w} R_v - R_w\bigr)$ where $R_w$ is the reference macro-F1 of the model
+deployed after window $w$.
+
+We also report labels used and training time. Every metric is computed per window and on the pooled stream; tables
+report pooled values with the mean and standard deviation over three seeds.

@@ -1,0 +1,103 @@
+\section{Background and related work}
+\label{sec:related}
+
+\Cref{tab:families} groups prior work into five lines of research and lists the properties that matter in our
+setting. No line covers all of them; \nova{} borrows one element from each.
+
+\begin{table}[t]
+\centering
+\caption{Lines of prior work and the properties they typically address (\checkmark: usually addressed;
+$\circ$: partly or in some works; --: usually not addressed).}
+\label{tab:families}
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+Line of work & \makecell{Rejects\\unknown flows} & \makecell{Adapts\\the model} & \makecell{Uses analyst\\labels} &
+\makecell{Models label\\delay} & \makecell{Validates\\updates} & \makecell{Multi-class\\attacks} \\
+\midrule
+Drift detection and rejection~\cite{jordaney2017transcend,barbero2022transcending,yang2021cade,han2023owad}
+  & \checkmark & $\circ$ & $\circ$ & -- & -- & $\circ$ \\
+Self-training adaptive NIDS~\cite{andresini2021insomnia,zhang2024aoc,zhang2025ssf,mousavipour2025shift}
+  & -- & \checkmark & $\circ$ & -- & -- & -- \\
+Active learning under drift~\cite{chen2023continuous,gupta2025netguard,prabhu2021clue}
+  & -- & \checkmark & \checkmark & -- & -- & $\circ$ \\
+Continual learning with replay~\cite{amalapuram2023augmented,amalapuram2024soul,chrysakis2020online}
+  & $\circ$ & \checkmark & $\circ$ & -- & -- & $\circ$ \\
+Open-set NIDS~\cite{zhang2020osr,corsini2023ood}
+  & \checkmark & -- & -- & -- & -- & \checkmark \\
+\midrule
+\nova{} (this work) & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\subsection{Evaluation methodology and datasets}
+TESSERACT~\cite{pendlebury2019tesseract} showed that two biases inflate results of security classifiers:
+\emph{spatial} bias, when the class ratio of the test set is unrealistic, and \emph{temporal} bias, when training
+data postdate test data. It proposed time-consistent splits and the area-under-time (AUT) metric, which we adopt.
+Arp et al.~\cite{arp2022dos} catalogue ten pitfalls of machine learning in security, among them data snooping,
+inappropriate baselines and lab-only evaluation; our protocol is designed against them (\cref{sec:problem}).
+
+CIC-IDS2017~\cite{sharafaldin2018} and CSE-CIC-IDS2018 are the most widely used flow datasets, and both contain
+errors. Engelen et al.~\cite{engelen2021troubleshooting} found feature-extraction artefacts and mislabelled flows
+in CIC-IDS2017. Lanvin et al.~\cite{lanvin2022errors} independently found unlabelled attack traffic and showed
+that the corrections change reported detection results. Liu et al.~\cite{liu2022error} audited both CIC
+datasets. UNSW-NB15~\cite{moustafa2015unsw} was captured on two days with a different tool chain. We use the
+three datasets as published and discuss the consequences of their errors in \cref{sec:discussion}. Performance
+estimates from chronological splits of these datasets differ from those of random
+splits~\cite{nismara2026temporal}, and a recent sequence study on CIC-IDS2017 found that the protocol matters far
+more than the model architecture~\cite{moczkodan2026transformers}.
+
+\subsection{Drift detection and rejection}
+Transcend~\cite{jordaney2017transcend} attaches conformal credibility scores to the predictions of any classifier
+and rejects low-credibility ones as drifting; its successor~\cite{barbero2022transcending} makes the calibration
+cheaper. CADE~\cite{yang2021cade} trains a contrastive autoencoder and flags samples whose distance to every class
+centroid, scaled by the class's spread, is large; it also explains which features cause the drift. OWAD~\cite{han2023owad}
+targets anomaly detectors trained on benign traffic: it calibrates their outputs, detects normality shift with a
+permutation test, selects a few samples that explain the shift for labelling, and adapts with a regulariser
+against forgetting. These works decide \emph{whether} the input distribution has moved. \nova{} uses a
+rejection rule of the same kind, but conditions it on the predicted class (a single centroid cannot represent
+multi-modal benign traffic, \cref{sec:res-ablation}) and couples it with labelling and deployment decisions.
+
+\subsection{Adaptive network intrusion detection}
+INSOMNIA~\cite{andresini2021insomnia} retrains a binary detector on drifting CIC-IDS2017 traffic. In every window,
+the least-confident flows are labelled by a nearest-centroid estimator instead of an analyst, and both models are
+fine-tuned. Because the estimator can only produce classes seen in training, genuinely new attacks are never
+learned, and its errors are fed back into training. AOC-IDS~\cite{zhang2024aoc} fine-tunes a contrastive
+autoencoder online on pseudo-labels from a Gaussian fit of similarity to a benign prototype. SSF~\cite{zhang2025ssf}
+adds drift detection, a learned selection of old and new samples, a small labelled share and strategic forgetting.
+Mousavipour et al.~\cite{mousavipour2025shift} detect shift at the distribution level, explain it with masks and
+adapt with relational distillation. ENIDrift~\cite{wang2022enidrift} keeps an ensemble of sub-classifiers over
+incremental packet embeddings and prunes unstable members. Most of these methods are binary, rely on their own
+pseudo-labels, and were evaluated on random or day-wise splits without label delay. We re-implement INSOMNIA as a
+representative of the self-training line.
+
+\subsection{Active learning under drift}
+Chen et al.~\cite{chen2023continuous} retrain an Android-malware classifier monthly and choose samples to label
+with a pseudo-loss computed from nearest training neighbours in a hierarchically contrastive embedding; they show
+that similarity-based selection beats plain uncertainty under drift. NetGuard~\cite{gupta2025netguard} adapts a
+NIDS from CIC-IDS2017 to CSE-CIC-IDS2018: it labels the flows with the highest density ratio between new and
+labelled traffic (Gaussian mixtures on each) and synthesises rare attacks with a tabular generator.
+CLUE~\cite{prabhu2021clue} clusters uncertainty-weighted embeddings and labels the sample nearest each centroid,
+which yields uncertain and diverse picks. \nova{}'s query belongs to this family, but it weights clusters by an
+open-world novelty score, keeps a uniform share for benign drift, and runs every window under a label delay. We
+re-implement uncertainty sampling and NetGuard's selection.
+
+\subsection{Continual learning with replay}
+Continual learning keeps a memory of past samples to avoid forgetting. Class-balancing reservoir sampling
+(CBRS)~\cite{chrysakis2020online} lets rare classes survive in a fixed memory. Amalapuram et
+al.~\cite{amalapuram2023augmented} extend it for intrusion detection and make interference-aware retrieval
+cheaper; SOUL~\cite{amalapuram2024soul} adds semi-supervised label generation for unseen tasks, keeping a
+pseudo-label only if it agrees with a similarity vote over the memory. We re-implement CBRS replay, which turned
+out to be the strongest baseline, and \nova{}'s label propagation follows SOUL's agreement principle.
+
+\subsection{Open-set recognition and out-of-distribution detection}
+Open-CNN~\cite{zhang2020osr} fits a Weibull distribution to the activations of known classes and estimates an
+unknown-class probability. Corsini and Yang~\cite{corsini2023ood} compare out-of-distribution detectors on the CIC
+datasets and find the distance to the $k$-th nearest training embedding the strongest single detector, in line
+with deep $k$-NN results in vision~\cite{sun2022knn}. These detectors were evaluated on static splits.
+\nova{} uses a class-conditional $k$-NN detector and recalibrates it whenever a new class is learned; we show
+that the recalibration is what keeps learned classes from being rejected after drift (\cref{sec:res-main}).
+Few-shot open-set recognition~\cite{liu2020peeler} learns embeddings by episodic meta-learning; we test whether
+such an embedding would help in \cref{sec:res-meta}.

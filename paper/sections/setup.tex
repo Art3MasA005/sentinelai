@@ -39,7 +39,7 @@ All methods also use the same open-world detector (maximum softmax probability a
 except in the detector ablation, so differences come from the adaptation strategy.
 
 \textbf{Baselines.} \emph{Static} (never updated); \emph{periodic retrain} (from scratch every five windows on
-the training data and the last ten labelled windows); \emph{continual replay} (uniform reservoir memory, retrain
+the training data and the last five labelled windows); \emph{continual replay} (uniform reservoir memory, retrain
 whenever labels arrive); \emph{guarded selective} (drift- or novelty-triggered retrain with a hold-out guard and
 rollback). Re-implemented under our protocol: \emph{uncertainty sampling} (least-confidence query, INSOMNIA's
 ``US + oracle'' upper bound~\cite{andresini2021insomnia}); \emph{INSOMNIA}~\cite{andresini2021insomnia}
