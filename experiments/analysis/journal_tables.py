@@ -77,15 +77,28 @@ def _cell(g, v, key, pct=False):
     return f"{100 * m:.1f}" if pct else f"{m:.3f}"
 
 
+def _seeds(group) -> set:
+    """Seeds present in a group of runs (ablation and sensitivity groups have fewer seeds than the main comparison)."""
+    return set().union(*(set(v) for v in group.values())) if group else set()
+
+
+def _matched(group, seeds):
+    """The main-comparison runs restricted to the given seeds, so that differences are paired by seed."""
+    return {v: {s: r for s, r in runs.items() if s in seeds} for v, runs in group.items()}
+
+
 def ablation_all(data, out: Path) -> None:
-    """Rows: full NOVA and each one-component ablation; columns: OW-F1 and FPR per dataset (with delta)."""
+    """Rows: full NOVA and each one-component ablation; columns: OW-F1 and FPR per dataset (with delta).
+    Full NOVA is taken from the main comparison, restricted to the ablation's seeds."""
     rows = []
     for v in ["nova"] + ABLATIONS:
         cells = []
         for tag in TAGS:
-            src = data.get(f"{tag} main b0.10") if v == "nova" else data.get(f"{tag} ablation b0.10")
-            full = data.get(f"{tag} main b0.10", {}).get("nova")
-            if src is None or v not in src or full is None:
+            abl = data.get(f"{tag} ablation b0.10", {})
+            main = _matched(data.get(f"{tag} main b0.10", {}), _seeds(abl))
+            src = main if v == "nova" else abl
+            full = main.get("nova")
+            if not abl or v not in src or not full:
                 cells += ["--", "--"]
                 continue
             m = agg(src[v], "macro_f1_ow")[0]
@@ -99,8 +112,8 @@ def ablation_all(data, out: Path) -> None:
 
 def sensitivity(data, out: Path) -> None:
     """Label delay (0/1/3) and review-rate (strict/default/lenient) on CIC17 for NOVA and CBRS (and static)."""
-    main = data.get("CIC17 main b0.10", {})
     delay = data.get("CIC17 delay b0.10", {})
+    main = _matched(data.get("CIC17 main b0.10", {}), _seeds(delay))
     rows = []
     for m in ("nova", "cbrs_replay"):
         cells = []
@@ -111,6 +124,7 @@ def sensitivity(data, out: Path) -> None:
     (out / "delay_paper.tex").write_text("\n".join(rows) + "\n", encoding="utf-8")
 
     review = data.get("CIC17 review-rate b0.10", {})
+    main = _matched(data.get("CIC17 main b0.10", {}), _seeds(review))
     rows = []
     for m in ("nova", "cbrs_replay", "static"):
         for lvl in ("strict", "default", "lenient"):

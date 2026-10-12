@@ -151,9 +151,10 @@ hold-out. Both datasets are evaluated with the configuration frozen on CIC-IDS20
 them after the main results (the ablations and the low budget) change nothing in the method; we mark them as such.
 
 \subsection{Experiments, statistics and implementation}
-\Cref{tab:experiments} maps the experiments to the research questions. Each configuration runs with three seeds;
-the seed changes model initialisation, label sampling and clustering, not the data. We report the mean and
-standard deviation over seeds. To compare \nova{} with another method, we take the per-window difference of their
+\Cref{tab:experiments} maps the experiments to the research questions. The main comparison and the 1\% budget run
+with five seeds, the ablations and sensitivity analyses with three; the seed changes model initialisation, label
+sampling and clustering, not the data. We report the mean and standard deviation over seeds. Where an analysis
+with three seeds is compared with full \nova{}, we take \nova{} from the same three seeds. To compare \nova{} with another method, we take the per-window difference of their
 seed-averaged OW-F1 (or false-positive rate) and report its mean with a 95\% moving-block bootstrap
 interval~\cite{kunsch1989jackknife}: blocks of five consecutive windows, 10{,}000 resamples. Consecutive windows are
 autocorrelated, and resampling blocks rather than single windows respects this; a test that treats windows as
@@ -167,7 +168,8 @@ kernels. In total, the article reports \TBD{N} runs.
 
 \begin{table}[t]
 \centering
-\caption{Experiments. Unless stated otherwise: budget 10\%, delay 1, gradient boosting, three seeds.}
+\caption{Experiments. Unless stated otherwise: budget 10\%, delay 1, gradient boosting. Seeds: five for RQ2 and
+RQ3, three otherwise.}
 \label{tab:experiments}
 \small
 \resizebox{\textwidth}{!}{%

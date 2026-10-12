@@ -23,9 +23,13 @@ attack traffic, but it also deploys models that confuse classes. Fern{\'a}ndez-B
 al.~\cite{fernandezbarrios2026candidate} report the opposite tendency on their replays: always deploying caused no
 net harm. The two findings are not contradictory. Their comparison is closed-set and their challengers are built
 under controlled, comparable evidence, whereas in our setting a candidate may know classes with only a handful of
-labels, and naming such a class wrongly costs a full class in open-world macro-F1. \TBD{Guard statistics and the
-held-out ablations will show how often the guard intervenes and whether its benefit transfers.} Operators should
-log how often a guard intervenes and what it prevents, rather than assume it helps.
+labels, and naming such a class wrongly costs a full class in open-world macro-F1. Our own results show both sides
+(\cref{sec:res-ablation}). On UNSW-NB15 the guard keeps \nova{} from deploying models with stale thresholds; without
+it, OW-F1 falls by 22 points. On CIC-IDS2017, much of its benefit is that it keeps two barely separable web attacks
+unlearned and therefore credited as \unk{}. On CSE-CIC-IDS2018 it makes no significant difference to OW-F1, although
+it lowers the false-positive rate. Its hold-out comparison is also biased against candidates that learn a new class
+(\cref{tab:guard}). Operators should log how often a guard intervenes and what it prevents, rather than assume it
+helps.
 
 \textbf{Read open-world scores with per-class results.} Open-world macro-F1 makes methods that learn different
 classes comparable, but it credits a class that is never learned and always rejected as fully correct
@@ -56,6 +60,9 @@ guard in particular.
 the other two datasets once, with the static model, which determined the UNSW-NB15 hold-out. The held-out ablations
 and the low-budget runs were added after the main results; they are analyses, not design steps.
 
-\textbf{Statistics.} We use three seeds per configuration. The paired Wilcoxon tests treat windows as samples,
-but consecutive windows are correlated, so the $p$-values overstate certainty. The seed changes sampling and
-initialisation but not the data, so the reported deviations do not include data variability.
+\textbf{Statistics.} We use five seeds for the main comparison and the 1\% budget, and three for the ablations and
+sensitivity analyses. The moving-block bootstrap respects the autocorrelation of consecutive windows, but with 70
+windows its intervals are wide, and an interval that includes zero is no evidence that two methods are equal.
+Stream-level macro-F1 gives classes with a few flows full weight, so on CSE-CIC-IDS2018 a single class with 33 flows
+can move it by five points (\cref{sec:res-ablation}). The seed changes sampling and initialisation but not the
+data, so the reported deviations do not include data variability.
