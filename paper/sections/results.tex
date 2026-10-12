@@ -46,7 +46,11 @@ then rejected as \unk{}, because the open-world thresholds were calibrated on th
 February traffic of the same classes lies outside them. Classes that the model has learned are no longer
 credited for \unk{}, so the rejections count as errors. \nova{} recalibrates each learned class on recent
 labelled flows that it did not train on (the calibration store) and reaches 0.509 OW-F1 and 0.595 AUT, ahead of
-the static model ($p = 0.03$) and guarded selective retraining (0.493, $p = 0.007$). It also has the highest
+the static model ($p = 0.03$) and guarded selective retraining (0.493, $p = 0.007$). We confirmed this
+mechanism with one additional run set after the main results, leaving the method unchanged. Without the
+calibration store, \nova{} also scores 0 on Exploits and Fuzzers, and it falls to 0.418 OW-F1 and 0.418 AUT
+(false-positive rate 9.1\%). This component cost only 1.9 points in the CIC-IDS2017 ablation, where the training
+and stream traffic of each learned class are closer. It also has the highest
 detection F1 (0.860) and the lowest false-positive rate (6.6\% against 7.6--19.0\%). Every method flags all
 UNSW-NB15 attack flows (detection recall 1.0), so on this dataset the methods differ in false positives and in
 naming the attack class, not in missed attacks.
