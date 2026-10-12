@@ -1,0 +1,19 @@
+# Python
+backend/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Local data & outputs (never commit datasets or results)
+data/
+experiments/results/*
+!experiments/results/.gitkeep
+.env
+
+# Build outputs and editor files
+paper/main.pdf
+*.synctex.gz
+app_flutter/build/
+.vscode/
+.idea/
+*.egg-info/

@@ -1,0 +1,24 @@
+\begin{abstract}
+Machine-learning network intrusion detectors are trained once and then meet traffic that drifts and attack
+classes that did not exist at training time, while analysts can label only a small and late fraction of the flows.
+Published approaches address these problems one at a time: drift adaptation for binary detectors, open-set
+rejection on static splits, or active learning without label delay. We study them together on chronological
+replays of CIC-IDS2017, CSE-CIC-IDS2018 and UNSW-NB15 with a fixed label budget and a one-window label delay,
+and we propose \nova{}, an adaptation loop that (i)~rejects flows that are far from every known class with a
+class-conditional $k$-nearest-neighbour detector, (ii)~spends the label budget on novel and diverse traffic modes,
+(iii)~propagates analyst labels to agreeing neighbours, (iv)~keeps rare attack classes in a class-balanced memory,
+and (v)~deploys a model update, or a rollback, only after it passes a hold-out and a forgetting check.
+Under one protocol and the same labelling cost, we compare \nova{} with eight methods, including
+re-implementations of INSOMNIA, NetGuard's density-aware selection, uncertainty sampling and class-balanced
+replay. On CIC-IDS2017 \nova{} reaches an open-world macro-F1 of 0.768 (best baseline 0.756) and a binary
+detection F1 of 0.854 at a 2.8\% false-positive rate (best baseline 4.5\%); with 1\% of the flows labelled its
+lead grows to nine points (0.651 against 0.561). On UNSW-NB15, where stale rejection thresholds pull every other
+adaptive method below the never-updated model, \nova{} is the only one above it (0.509 against 0.499). On
+CSE-CIC-IDS2018 it ties the strongest baseline (0.722) with 35\% fewer false positives and five times less
+forgetting.
+We release the evaluation console, configurations and per-flow predictions.
+\end{abstract}
+
+\begin{IEEEkeywords}
+network intrusion detection, concept drift, open-set recognition, active learning, continual learning
+\end{IEEEkeywords}

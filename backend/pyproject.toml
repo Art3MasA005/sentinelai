@@ -1,0 +1,10 @@
+[project]
+name = "sentinelai-backend"
+version = "0.1.0"
+description = "Local research backend for drift-aware open-world network intrusion detection"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-q"

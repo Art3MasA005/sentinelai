@@ -1,0 +1,13 @@
+{
+  "name": "DEMO · static",
+  "dataset_id": "DEMO_sentinel_synthetic",
+  "profile": "sentinel_demo",
+  "seed": 42,
+  "model": {"kind": "hist_gb"},
+  "split": {"train_fraction": 0.3, "val_fraction": 0.2, "window_size": 1000},
+  "openworld": {"method": "msp+centroid", "msp_quantile": 0.02, "distance_quantile": 0.99},
+  "drift": {"detectors": ["ks", "psi", "confidence"]},
+  "labels": {"delay_windows": 1, "budget": 0.2},
+  "adaptation": {"method": "static", "retrain_every": 5, "memory_windows": 5},
+  "notes": "Synthetic DEMO data; compares the four adaptation methods under identical split/model/label policy."
+}

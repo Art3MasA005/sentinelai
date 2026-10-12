@@ -1,0 +1,51 @@
+% NOVA paper — IEEE conference format.
+% Build:  latexmk -pdf main.tex      (MiKTeX / TeX Live; also works on Overleaf after uploading ../experiments/paper)
+% Tables and figures come from experiments/analysis/paper_results.py; re-run it after new experiments.
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{catchfile}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage[hidelinks]{hyperref}
+\usepackage[capitalise,noabbrev]{cleveref}
+
+\graphicspath{{../experiments/paper/}}
+\newcommand{\results}[1]{../experiments/paper/#1}
+% Placeholder for numbers that are filled in once all runs finish. Remove before submission.
+\newcommand{\TBD}[1]{\textcolor{red}{[#1]}}
+\newcommand{\nova}{\textsc{Nova}}
+\newcommand{\unk}{\textsc{unknown}}
+
+\begin{document}
+
+\title{\nova: Novelty-aware, Open-world, Validated Adaptation for Network Intrusion Detection under Delayed and Scarce Labels}
+
+\author{
+\IEEEauthorblockN{\TBD{Author Name}}
+\IEEEauthorblockA{\TBD{Affiliation}\\ \TBD{email}}
+}
+
+\maketitle
+
+\input{sections/abstract}
+\input{sections/introduction}
+\input{sections/related}
+\input{sections/problem}
+\input{sections/method}
+\input{sections/setup}
+\input{sections/results}
+\input{sections/discussion}
+\input{sections/conclusion}
+
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+\end{document}

@@ -1,0 +1,31 @@
+{
+ "group": "CIC17 detector b0.10",
+ "base": "../experiments/configs/cic2017_static.json",
+ "seeds": [
+  1,
+  2,
+  3
+ ],
+ "set": {
+  "store_features": false,
+  "flow_storage": "file",
+  "openworld.method": "msp+knn",
+  "adaptation.buffer_size": 20000
+ },
+ "variants": [
+  {
+   "name": "static msp+centroid",
+   "set": {
+    "adaptation.method": "static",
+    "openworld.method": "msp+centroid"
+   }
+  },
+  {
+   "name": "nova msp+centroid",
+   "set": {
+    "adaptation.method": "nova",
+    "openworld.method": "msp+centroid"
+   }
+  }
+ ]
+}

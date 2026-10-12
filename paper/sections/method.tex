@@ -1,0 +1,73 @@
+\section{\nova{}}
+\label{sec:method}
+
+\nova{} wraps any probabilistic classifier $f$ (gradient-boosted trees in our experiments). It keeps a training
+memory $M$, a calibration store $Q$ of held-out analyst labels, and the previously deployed model.
+\Cref{alg:nova} gives the per-window loop; the components are described below.
+
+\begin{algorithm}[t]
+\caption{\nova{}, one window $W_w$}
+\label{alg:nova}
+\begin{algorithmic}[1]
+\State predict $W_w$ with $f$; compute unknown scores $s(x)$ \Comment{\cref{sec:unknown}}
+\State request labels for $\textsc{Query}(W_w, s, B n)$ \Comment{arrive at $w{+}\delta$; \cref{sec:query}}
+\State $L \gets$ labels that arrived now
+\If{$f$ was just deployed \textbf{and} $f_{\text{prev}}$ beats $f$ on $L$ by $>\rho$ \textbf{and} the reference check passes}
+   \State roll back to $f_{\text{prev}}$ \Comment{\cref{sec:guard}}
+\EndIf
+\State $H \gets$ stratified hold-out of $L$; \ $T \gets L\setminus H$
+\State $P \gets \textsc{Propagate}(T)$ \Comment{\cref{sec:prop}}
+\State $f' \gets \textsc{Train}(M \cup T \cup P)$, newest labels weighted $\omega$; calibrate on reference $\cup\, Q$
+\If{$\mathrm{F1}_H(f') \ge \mathrm{F1}_H(f)$ \textbf{and} $\mathrm{F1}_{\text{ref}}(f) - \mathrm{F1}_{\text{ref}}(f') \le \epsilon$}
+   \State deploy $f'$
+\EndIf
+\State $M \gets \textsc{CBRS}(M, T \cup P)$; move $H$ to $Q$ (classes already in $M$) or to $M$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Open-world scoring}
+\label{sec:unknown}
+For a flow $x$ with predicted class $c = \arg\max_k p_k(x)$, \nova{} computes two scores, each scaled so that its
+threshold is 1:
+\begin{align}
+s_{\text{msp}}(x) &= \frac{1 - p_c(x)}{1 - \tau^{\text{msp}}_c}, &
+s_{\text{knn}}(x) &= \frac{d_k\!\left(x, \mathcal{B}_c\right)}{\tau^{\text{knn}}_c},
+\end{align}
+where $d_k(x,\mathcal{B}_c)$ is the distance to the $k$-th nearest training flow of class $c$ in a per-class bank
+$\mathcal{B}_c$. The thresholds are per class: $\tau^{\text{msp}}_c$ is a low quantile (2\%) of the confidence of
+held-out flows predicted as $c$, and $\tau^{\text{knn}}_c$ a high quantile (99\%) of $d_k$ on held-out flows of $c$.
+The unknown score is $s(x) = \max(s_{\text{msp}}, s_{\text{knn}})$ and the decision is \unk{} iff $s(x) > 1$.
+Conditioning the neighbour search on the predicted class follows multi-modal classes such as benign traffic, which
+a single centroid~\cite{yang2021cade} cannot. Thresholds are recomputed for every model version on the reference set
+plus the calibration store, so classes learned during deployment receive their own thresholds instead of the
+strictest fallback.
+
+\subsection{Query}
+\label{sec:query}
+Of the budget $Bn$, a share $\rho_u$ is drawn uniformly to keep an unbiased view of benign drift. The rest is
+spread over $K$ $k$-means clusters of the window: each cluster $j$ receives at least one label and a quota
+proportional to $\sqrt{|j|}\,\bigl(0.1 + \bar{s}_j\bigr)$, where $\bar{s}_j$ is the mean clipped unknown score of
+the cluster; inside a cluster, the highest-scoring flows are chosen. Square-root size damping keeps large drifting
+benign modes covered while emerging attack modes, which are both novel and compact, receive many labels.
+
+\subsection{Label propagation}
+\label{sec:prop}
+An unlabelled flow $u$ of the same window takes class $c$ when its $\min(k_p, n_c)$ nearest labelled flows all have
+class $c$ and its nearest distance is within the radius of $c$ (the 90th percentile of nearest-same-class distances
+among the labels of $c$). At most $r$ propagated labels are kept per analyst label of $c$. Unlike
+self-training~\cite{andresini2021insomnia,zhang2024aoc}, propagation is anchored on analyst labels and never
+creates a class.
+
+\subsection{Memory}
+\label{sec:memory}
+The training memory is a class-balancing reservoir~\cite{chrysakis2020online}: once full, a sample of a class that is
+not the largest evicts a random sample of the largest class. ``Largest'' compares size divided by a class weight,
+and benign traffic receives weight $\beta$: it is multi-modal, and starving it raises false alarms.
+
+\subsection{Deployment guard and rollback}
+\label{sec:guard}
+A candidate is deployed only if it is at least as good as the current model on the held-out slice $H$ of the newest
+analyst labels and loses at most $\epsilon$ macro-F1 on the reference set. Both comparisons use the open-world
+credit of \cref{sec:problem}, so models that know different classes are compared on the same task, and ignore
+classes with fewer than $m$ labels in the compared slice. A rollback is itself a deployment and must pass the same
+reference check; without it, a rollback to an early model can undo what the stream has taught.

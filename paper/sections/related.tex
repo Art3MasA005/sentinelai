@@ -1,0 +1,42 @@
+\section{Related Work}
+\label{sec:related}
+
+\textbf{Evaluation methodology and datasets.}
+TESSERACT~\cite{pendlebury2019tesseract} showed that spatial and temporal bias inflate malware-detection results
+and introduced time-consistent splits and the area-under-time (AUT) metric. Arp et al.~\cite{arp2022dos} found
+ten such pitfalls across 30 top-venue security papers. For NIDS data specifically, Engelen et
+al.~\cite{engelen2021troubleshooting}, Lanvin et al.~\cite{lanvin2022errors} and Liu et al.~\cite{liu2022error}
+document labelling and feature-extraction errors in CIC-IDS2017 and CSE-CIC-IDS2018. We follow their advice:
+chronological replay, preprocessing fitted on the training period only, multiple seeds, and baselines run
+under our protocol rather than numbers copied across papers.
+
+\textbf{Drift detection and rejection.}
+Transcend~\cite{jordaney2017transcend} and its successor~\cite{barbero2022transcending} attach conformal
+credibility to any classifier and reject low-credibility predictions. CADE~\cite{yang2021cade} learns a
+contrastive embedding and flags samples far from every class centroid. OWAD~\cite{han2023owad} calibrates
+anomaly-detector outputs, tests for normality shift and selects the samples that explain it. These methods
+detect or explain drift; \nova{} also decides what to label and when an update may be deployed.
+
+\textbf{Adaptive and continual NIDS.}
+INSOMNIA~\cite{andresini2021insomnia} retrains a detector on pseudo-labels from a nearest-centroid estimator,
+without analyst labels after deployment. ENIDrift~\cite{wang2022enidrift} maintains an ensemble of
+sub-classifiers over incremental packet embeddings. AOC-IDS~\cite{zhang2024aoc} fine-tunes a contrastive
+autoencoder on Gaussian-fit pseudo-labels; SSF~\cite{zhang2025ssf} adds drift-triggered strategic sample
+selection and forgetting; Mousavipour et al.~\cite{mousavipour2025shift} add distribution-level shift
+explanation and relational distillation. SOUL~\cite{amalapuram2024soul} and Amalapuram et
+al.~\cite{amalapuram2023augmented} study continual learning with replay memories, including class-balanced
+reservoirs~\cite{chrysakis2020online}. Almost all of these are binary detectors; none rejects unknown traffic
+per flow while also modelling label delay.
+
+\textbf{Active learning under drift.}
+Chen et al.~\cite{chen2023continuous} combine hierarchical contrastive learning with a similarity-based
+uncertainty score for monthly Android-malware relabelling. NetGuard~\cite{gupta2025netguard} selects flows by
+a density ratio between new and labelled traffic and synthesises minority attacks. CLUE~\cite{prabhu2021clue}
+clusters uncertainty-weighted embeddings to pick uncertain and diverse samples. \nova{}'s query belongs to this
+family, but weights clusters by an open-world novelty score and runs every window under a label delay.
+
+\textbf{Open-set recognition for NIDS.}
+EVT/OpenMax-style detectors~\cite{zhang2020osr} estimate an unknown-class probability. Corsini and
+Yang~\cite{corsini2023ood} compare six out-of-distribution detectors on CIC data and find $k$-NN distance on
+embeddings the strongest single detector, in line with deep $k$-NN results in vision~\cite{sun2022knn}.
+\nova{} uses a class-conditional variant and recalibrates it as new classes are learned.

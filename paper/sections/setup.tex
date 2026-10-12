@@ -1,0 +1,64 @@
+\section{Experimental Setup}
+\label{sec:setup}
+
+\textbf{Datasets.} \Cref{tab:datasets} summarises the three datasets. All are replayed in timestamp order.
+From each we take 400{,}000 flows evenly spaced over time (deterministic); the first 30\% form the training
+period (its last 20\% is the reference set) and the remaining 280{,}000 flows form 70 windows of 4{,}000 flows.
+CIC-IDS2017~\cite{sharafaldin2018} uses the \texttt{TrafficLabelling} CSVs, whose timestamps lack AM/PM; we
+restore afternoon times. Its training period (Monday and Tuesday morning) contains only benign traffic and
+FTP-Patator, so twelve attack classes are new. For CSE-CIC-IDS2018 we use the ``Processed Traffic Data for ML''
+CSVs, thinned to one row in eight per file before sampling; seven attack classes are known at training time and
+seven appear later. In UNSW-NB15~\cite{moustafa2015unsw} every class already occurs in the first capture day, so,
+as is common in open-set NIDS work, we remove DoS, Reconnaissance, Shellcode and Worms from the training
+period; they appear in the stream as unknown attacks.
+
+\begin{table}[t]
+\centering
+\caption{Datasets (after replay sampling: 400k flows, 70 windows).}
+\label{tab:datasets}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lccc@{}}
+\toprule
+ & CIC-IDS2017 & CSE-CIC-IDS2018 & UNSW-NB15 \\
+\midrule
+Source flows & 2.83\,M & 16.2\,M & 2.54\,M \\
+Days covered & 5 & 10 & 2 \\
+Classes (incl.\ benign) & 15 & 15 & 10 \\
+Attack classes in training & 1 & 7 & 5 \\
+New in stream & 12 & 7 & 4 (held out) \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\textbf{Labels.} Budget $B = 10\%$ (main) and $1\%$ of each window, delay $\delta = 1$ window. Every method that
+uses labels gets exactly the same number; INSOMNIA uses none by design.
+
+\textbf{Model.} All methods use the same classifier: scikit-learn histogram gradient boosting (150 iterations,
+L2 regularisation 1.0); classes with fewer than five labelled flows are left out of training and stay \unk{}.
+All methods also use the same open-world detector (maximum softmax probability and class-conditional $k$-NN),
+except in the detector ablation, so differences come from the adaptation strategy.
+
+\textbf{Baselines.} \emph{Static} (never updated); \emph{periodic retrain} (from scratch every five windows on
+the training data and the last ten labelled windows); \emph{continual replay} (uniform reservoir memory, retrain
+whenever labels arrive); \emph{guarded selective} (drift- or novelty-triggered retrain with a hold-out guard and
+rollback). Re-implemented under our protocol: \emph{uncertainty sampling} (least-confidence query, INSOMNIA's
+``US + oracle'' upper bound~\cite{andresini2021insomnia}); \emph{INSOMNIA}~\cite{andresini2021insomnia}
+(least-confident 50\% of each window labelled by a nearest-centroid estimator, no analyst labels);
+\emph{NetGuard PS}~\cite{gupta2025netguard} (density-ratio query with two diagonal Gaussian mixtures; the
+generative augmentation is not reproduced); and \emph{CBRS replay}~\cite{chrysakis2020online,amalapuram2023augmented}
+(class-balancing reservoir memory). All replay memories hold 20{,}000 flows.
+
+\textbf{Development and held-out data.} All design decisions, including the ablation, were made on
+CIC-IDS2017. CSE-CIC-IDS2018 and UNSW-NB15 were used for no design decision (we only checked their class
+composition with one run of the static model, which led to the UNSW-NB15 hold-out above). Both are
+evaluated only with the configuration frozen on CIC-IDS2017.
+
+\textbf{\nova{} hyper-parameters} were fixed from design arguments and two development runs, then frozen:
+uniform share $\rho_u = 0.2$, $K = 24$ clusters, $k_p = 5$, $r = 5$, benign weight $\beta = 4$, 25\% hold-out,
+calibration store of 200 flows per class (after 50 in memory), minimum support $m = 5$, $\epsilon = 0.05$,
+rollback margin $0.05$, recency weight $\omega = 2$, $k = 10$ with 3{,}000 flows per class bank.
+
+\textbf{Runs.} Three seeds per configuration (the seed changes model initialisation, label sampling and
+clustering, not the data); we report mean $\pm$ standard deviation and a paired Wilcoxon signed-rank test on the
+per-window OW-F1 of \nova{} against each method (windows are autocorrelated, so $p$-values are indicative). Neural
+variants use PyTorch 2.14.1 with CUDA 13.0 on an RTX 3060; everything else runs on a 16-core CPU.
