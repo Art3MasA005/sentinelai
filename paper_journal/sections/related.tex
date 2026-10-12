@@ -1,8 +1,9 @@
 \section{Background and related work}
 \label{sec:related}
 
-\Cref{tab:families} groups prior work into five lines of research and lists the properties that matter in our
-setting. No line covers all of them; \nova{} borrows one element from each.
+\Cref{tab:families} groups prior work into seven lines of research and lists the properties that matter in our
+setting. We are not aware of work that covers all of them; \nova{} borrows elements from each, and its
+contribution lies in combining them under one protocol and showing which combinations matter.
 
 \begin{table}[t]
 \centering
@@ -24,8 +25,12 @@ Active learning under drift~\cite{chen2023continuous,gupta2025netguard,prabhu202
   & -- & \checkmark & \checkmark & -- & -- & $\circ$ \\
 Continual learning with replay~\cite{amalapuram2023augmented,amalapuram2024soul,chrysakis2020online}
   & $\circ$ & \checkmark & $\circ$ & -- & -- & $\circ$ \\
-Open-set NIDS~\cite{zhang2020osr,corsini2023ood}
-  & \checkmark & -- & -- & -- & -- & \checkmark \\
+Open-set NIDS~\cite{zhang2020osr,corsini2023ood,yuan2026openpn,fuhrman2025cnd}
+  & \checkmark & $\circ$ & $\circ$ & -- & -- & \checkmark \\
+Learning under label delay~\cite{pham2022stream,botacin2025label}
+  & -- & \checkmark & \checkmark & \checkmark & -- & $\circ$ \\
+Validated model promotion~\cite{fernandezbarrios2026candidate}
+  & -- & \checkmark & $\circ$ & -- & \checkmark & $\circ$ \\
 \midrule
 \nova{} (this work) & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
 \bottomrule
@@ -92,9 +97,29 @@ cheaper; SOUL~\cite{amalapuram2024soul} adds semi-supervised label generation fo
 pseudo-label only if it agrees with a similarity vote over the memory. We re-implement CBRS replay, which turned
 out to be the strongest baseline, and \nova{}'s label propagation follows SOUL's agreement principle.
 
+\subsection{Label delay}
+Ground truth arriving late (\emph{label delay} or \emph{verification latency}) has been studied for data streams in
+general. Pham et al.~\cite{pham2022stream} show that stream-based active learning degrades when labels arrive
+late, because the usefulness of a label is estimated on data that is outdated by the time the label arrives; they
+propose simulating the delayed labels. For malware detection, Botacin and Gomes~\cite{botacin2025label} show that
+analysis queues delay labels enough to cause a substantial drop in detection, and that pseudo-labels mitigate part
+of it. These works motivate our oracle, which enforces the same delay for every method. They do not consider
+unknown-class rejection or multi-class NIDS traffic.
+
+\subsection{Validated model promotion}
+Fern{\'a}ndez-Barrios et al.~\cite{fernandezbarrios2026candidate} ask the question behind \nova{}'s guard: when should
+a retrained challenger replace the deployed model? Across nine update policies on CICIDS2017, UNSW-NB15 and ToN-IoT,
+they find that the answer depends on how comparable the challenger's construction and evidence are. Validation
+helped challengers trained on less evidence but gave no average benefit at parity, and in their replays of real
+time-ordered traffic, always deploying caused no net harm. Our guard differs in two ways. It compares models with
+open-world credit on held-out \emph{analyst} labels, and it also checks forgetting on a fixed reference set. We
+discuss in \cref{sec:discussion} how our ablation relates to their finding.
+
 \subsection{Open-set recognition and out-of-distribution detection}
 Open-CNN~\cite{zhang2020osr} fits a Weibull distribution to the activations of known classes and estimates an
-unknown-class probability. Corsini and Yang~\cite{corsini2023ood} compare out-of-distribution detectors on the CIC
+unknown-class probability. OpenPN~\cite{yuan2026openpn} classifies known traffic, flags unknown traffic and adds an
+expert in the loop for the flagged flows. CND-IDS~\cite{fuhrman2025cnd} updates a feature extractor continually and
+detects novel attacks without attack labels from PCA reconstruction error. Corsini and Yang~\cite{corsini2023ood} compare out-of-distribution detectors on the CIC
 datasets and find the distance to the $k$-th nearest training embedding the strongest single detector, in line
 with deep $k$-NN results in vision~\cite{sun2022knn}. These detectors were evaluated on static splits.
 \nova{} uses a class-conditional $k$-NN detector and recalibrates it whenever a new class is learned; we show

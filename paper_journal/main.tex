@@ -44,6 +44,10 @@ Method & OW-F1 & AUT & Det-F1 & FPR & U-AUROC & Forgetting\\
 \end{tabular}}}{\TBD{\detokenize{#2} not generated yet}}
 \end{table}}
 
+% \loadrows{\macro}{file}{ncols}: read generated table rows into \macro before a tabular starts.
+\newcommand{\loadrows}[3]{\IfFileExists{\results{#2}}{\CatchFileDef{#1}{\results{#2}}{}}%
+  {\def#1{\multicolumn{#3}{l}{\TBD{\detokenize{#2} not generated yet}} \\}}}
+
 \journal{Computers \& Security}
 
 \begin{document}
@@ -75,6 +79,6 @@ the \nova{} loop and a chronological evaluation on three datasets}
 \input{sections/declarations}
 
 \bibliographystyle{elsarticle-num}
-\bibliography{refs}
+\bibliography{refs,refs_extra}
 
 \end{document}

@@ -59,6 +59,8 @@ calibration store of 200 flows per class (after 50 in memory), minimum support $
 rollback margin $0.05$, recency weight $\omega = 2$, $k = 10$ with 3{,}000 flows per class bank.
 
 \textbf{Runs.} Three seeds per configuration (the seed changes model initialisation, label sampling and
-clustering, not the data); we report mean $\pm$ standard deviation and a paired Wilcoxon signed-rank test on the
-per-window OW-F1 of \nova{} against each method (windows are autocorrelated, so $p$-values are indicative). Neural
-variants use PyTorch 2.14.1 with CUDA 13.0 on an RTX 3060; everything else runs on a 16-core CPU.
+clustering, not the data); we report mean $\pm$ standard deviation. To compare two methods we take the
+per-window difference of their seed-averaged OW-F1 (or FPR) and report its mean with a 95\% moving-block bootstrap
+interval~\cite{kunsch1989jackknife} (blocks of five windows, 10{,}000 resamples), which respects the autocorrelation of consecutive windows;
+we call a difference significant only if the interval excludes zero. Neural variants use PyTorch 2.14.1 with CUDA
+13.0 on an RTX 3060; everything else runs on a 16-core CPU.

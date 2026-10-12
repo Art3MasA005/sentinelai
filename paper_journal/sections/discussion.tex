@@ -17,10 +17,15 @@ share. A 2.8\% review rate is still large in absolute terms: at one million beni
 quantiles trade review load against recall. Operators should set them from their review capacity, not from a
 benchmark.
 
-\textbf{Validate every update.} The deployment guard is the component whose removal costs the most on the
-development dataset. A retraining loop that deploys every candidate learns more attack traffic, but it also
-deploys models that confuse classes. A hold-out check on the newest labels and a forgetting check on a fixed
-reference set are simple to add to any adaptation loop.
+\textbf{Validate every update, but measure what the validation buys.} The deployment guard is the component whose
+removal costs the most on the development dataset. A retraining loop that deploys every candidate learns more
+attack traffic, but it also deploys models that confuse classes. Fern{\'a}ndez-Barrios et
+al.~\cite{fernandezbarrios2026candidate} report the opposite tendency on their replays: always deploying caused no
+net harm. The two findings are not contradictory. Their comparison is closed-set and their challengers are built
+under controlled, comparable evidence, whereas in our setting a candidate may know classes with only a handful of
+labels, and naming such a class wrongly costs a full class in open-world macro-F1. \TBD{Guard statistics and the
+held-out ablations will show how often the guard intervenes and whether its benefit transfers.} Operators should
+log how often a guard intervenes and what it prevents, rather than assume it helps.
 
 \textbf{Read open-world scores with per-class results.} Open-world macro-F1 makes methods that learn different
 classes comparable, but it credits a class that is never learned and always rejected as fully correct

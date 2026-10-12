@@ -4,7 +4,8 @@
 Under chronological replay, new attack classes and a small, delayed labelling budget, detectors trained once
 collapse and simple retraining forgets or floods analysts with reviews. \nova{} combines class-conditional
 open-world rejection with recalibration, a novelty-weighted query, conservative label propagation, a
-class-balanced memory and a guarded deployment loop. At a 10\% budget it is the best or tied-best method on
-open-world macro-F1 on all three datasets, with a lower false-positive rate than the strongest baseline on each; at 1\% it leads on both
-CIC datasets. Short-lived attacks that look benign, and the transfer of its accuracy gain to neural classifiers,
-remain open problems.
+class-balanced memory and a guarded deployment loop. It matches the strongest baseline on open-world macro-F1 on
+both CIC datasets, leads it clearly when only 1\% of CIC-IDS2017 is labelled, and flags significantly fewer benign
+flows on all three datasets. On UNSW-NB15 its per-class recalibration avoids the stale-threshold failure that
+pulls every replay-based method below the never-updated model. Short-lived attacks that look benign, and the
+transfer of its gains to neural classifiers, remain open problems.

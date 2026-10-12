@@ -13,8 +13,11 @@ samples. They do not decide what to label or when to deploy an update.
 
 \textbf{Adaptive NIDS.} INSOMNIA~\cite{andresini2021insomnia}, AOC-IDS~\cite{zhang2024aoc} and
 SSF~\cite{zhang2025ssf} retrain mostly binary detectors, often from pseudo-labels; replay-based continual
-learning~\cite{amalapuram2023augmented} uses class-balanced reservoirs~\cite{chrysakis2020online}. None rejects
-unknown traffic per flow while modelling label delay.
+learning~\cite{amalapuram2023augmented} uses class-balanced reservoirs~\cite{chrysakis2020online}.
+Fern{\'a}ndez-Barrios et al.~\cite{fernandezbarrios2026candidate} study when a retrained model should replace the
+deployed one. Label delay has been studied for stream active learning~\cite{pham2022stream} and malware
+pipelines~\cite{botacin2025label}. We are not aware of an adaptive NIDS that rejects unknown traffic per flow
+while modelling label delay.
 
 \textbf{Active learning and open-set NIDS.} NetGuard~\cite{gupta2025netguard} queries by a density ratio and
 Chen et al.~\cite{chen2023continuous} by contrastive uncertainty, both for a closed class set.

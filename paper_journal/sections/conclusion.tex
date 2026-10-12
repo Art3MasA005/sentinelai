@@ -8,10 +8,12 @@ and a small, delayed labelling budget, with metrics that remain comparable when 
 
 \nova{} combines class-conditional open-world rejection with per-class recalibration, a novelty-weighted and
 diverse query, conservative label propagation, a class-balanced memory and a guarded deployment loop. At a 10\%
-budget it is the best or tied-best method on open-world macro-F1 on all three datasets, with a lower false-positive
-rate than the strongest baseline on each. At a 1\% budget, it leads on both CIC datasets. Recalibrating the
-rejection thresholds of learned classes on recent held-out labels is what keeps it above the never-updated model on
-UNSW-NB15, where every other adaptive method falls below it.
+budget it matches the strongest baseline on open-world macro-F1 on the two CIC datasets and is significantly
+better than every other method, and it flags significantly fewer benign flows than the strongest baseline on all
+three datasets. At a 1\% budget it leads clearly on CIC-IDS2017. Recalibrating the rejection thresholds of learned
+classes on recent held-out labels keeps it level with the never-updated model on UNSW-NB15, where every
+replay-based method falls far below it. Separating the open-world score into known-class and unknown-class outcomes,
+and counting what the deployment guard does, proved as informative as the headline metric.
 
 The approach has clear limits. Short-lived attacks that resemble benign traffic remain undetected by every method
 and every representation we tried, including a meta-learned embedding. The accuracy gain did not carry over to an

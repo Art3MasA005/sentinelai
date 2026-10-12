@@ -3,14 +3,15 @@ Network intrusion detectors are trained once, then meet drifting traffic and att
 at training time, while analysts can label only a small and late fraction of the flows. We study these
 conditions together on chronological replays of CIC-IDS2017, CSE-CIC-IDS2018 and UNSW-NB15, with a fixed label
 budget and a one-window label delay. We propose \nova{}, an adaptation loop that rejects flows far from every
-known class with a class-conditional $k$-nearest-neighbour detector, spends the label budget on novel and diverse
-traffic, propagates analyst labels to agreeing neighbours, keeps rare attacks in a class-balanced memory, and
-deploys an update or a rollback only after a hold-out and a forgetting check. Against eight methods under the
-same labelling cost, including re-implementations of INSOMNIA, NetGuard and class-balanced replay, \nova{} reaches
-an open-world macro-F1 of 0.768 on CIC-IDS2017 (best baseline 0.756) at a 2.8\% false-positive rate (4.5\%).
-With 1\% of the flows labelled, its lead grows to nine points. On UNSW-NB15, where stale rejection thresholds pull
-every other adaptive method below the never-updated model, \nova{} is the only one above it. On CSE-CIC-IDS2018 it
-ties the strongest baseline with 35\% fewer false positives.
+known class with a class-conditional $k$-nearest-neighbour detector, recalibrates it for learned classes, spends
+the label budget on novel and diverse traffic, propagates analyst labels to agreeing neighbours, keeps rare
+attacks in a class-balanced memory, and deploys an update or a rollback only after a hold-out check. Against
+eight methods under the same labelling cost, including re-implementations of INSOMNIA, NetGuard and
+class-balanced replay, \nova{} matches the strongest baseline on open-world macro-F1 on both CIC datasets (0.768
+against 0.756 and 0.722 against 0.722) while flagging significantly fewer benign flows on every dataset (e.g.\
+2.8\% against 4.5\%). On UNSW-NB15, stale rejection thresholds pull every replay-based method below the
+never-updated model; \nova{} stays level with it, and an ablation shows that per-class recalibration is the
+reason.
 \end{abstract}
 
 \begin{IEEEkeywords}

@@ -1,0 +1,708 @@
+{
+ "guard CIC17 b0.10": {
+  "proposed": 69.0,
+  "accepted": 52.0,
+  "rejected": 17.0,
+  "rejected_gain": 17.0,
+  "rejected_forgetting": 0.0,
+  "rejected_with_new_class": 7.333333333333333,
+  "rollbacks": 2.3333333333333335,
+  "holdout_median": 100.0,
+  "holdout_min": 99.0,
+  "n": 3
+ },
+ "guard CIC17 b0.01": {
+  "proposed": 69.0,
+  "accepted": 57.333333333333336,
+  "rejected": 11.666666666666666,
+  "rejected_gain": 11.666666666666666,
+  "rejected_forgetting": 0.0,
+  "rejected_with_new_class": 3.0,
+  "rollbacks": 5.0,
+  "holdout_median": 10.0,
+  "holdout_min": 9.0,
+  "n": 3
+ },
+ "guard IDS18 b0.10": {
+  "proposed": 69.0,
+  "accepted": 49.0,
+  "rejected": 20.0,
+  "rejected_gain": 20.0,
+  "rejected_forgetting": 0.0,
+  "rejected_with_new_class": 6.0,
+  "rollbacks": 2.6666666666666665,
+  "holdout_median": 100.0,
+  "holdout_min": 99.33333333333333,
+  "n": 3
+ },
+ "guard IDS18 b0.01": {
+  "proposed": 69.0,
+  "accepted": 54.333333333333336,
+  "rejected": 14.666666666666666,
+  "rejected_gain": 14.666666666666666,
+  "rejected_forgetting": 0.0,
+  "rejected_with_new_class": 2.0,
+  "rollbacks": 7.333333333333333,
+  "holdout_median": 10.0,
+  "holdout_min": 9.0,
+  "n": 3
+ },
+ "guard UNSW b0.10": {
+  "proposed": 69.0,
+  "accepted": 45.0,
+  "rejected": 24.0,
+  "rejected_gain": 24.0,
+  "rejected_forgetting": 0.0,
+  "rejected_with_new_class": 2.3333333333333335,
+  "rollbacks": 8.0,
+  "holdout_median": 99.0,
+  "holdout_min": 96.66666666666667,
+  "n": 3
+ },
+ "guard UNSW b0.01": {
+  "proposed": 69.0,
+  "accepted": 57.0,
+  "rejected": 12.0,
+  "rejected_gain": 12.0,
+  "rejected_forgetting": 0.0,
+  "rejected_with_new_class": 0.3333333333333333,
+  "rollbacks": 4.0,
+  "holdout_median": 9.0,
+  "holdout_min": 7.333333333333333,
+  "n": 3
+ },
+ "decomposition CIC17 b0.10": {
+  "nova": {
+   "known_macro_f1": 0.7861306554514864,
+   "known_false_reject": 0.05529178231460747,
+   "unknown_recall": 0.4381341789207025,
+   "unknown_precision": 0.3508504617118336,
+   "known_attack_identified": 0.7542362019171084,
+   "novel_share": 0.06697738095238094
+  },
+  "cbrs_replay": {
+   "known_macro_f1": 0.5973446125948922,
+   "known_false_reject": 0.09221178699363804,
+   "unknown_recall": 0.5496991676570797,
+   "unknown_precision": 0.31117687078134243,
+   "known_attack_identified": 0.6947920450014401,
+   "novel_share": 0.07256309523809525
+  },
+  "continual_replay": {
+   "known_macro_f1": 0.5223412139324143,
+   "known_false_reject": 0.16685989164283208,
+   "unknown_recall": 0.4307546075776263,
+   "unknown_precision": 0.18728895249196476,
+   "known_attack_identified": 0.359863707615282,
+   "novel_share": 0.08206547619047619
+  },
+  "guarded_selective": {
+   "known_macro_f1": 0.7657583634051974,
+   "known_false_reject": 0.07882505038406996,
+   "unknown_recall": 0.47969679096583473,
+   "unknown_precision": 0.5743478674699772,
+   "known_attack_identified": 0.6065394068316664,
+   "novel_share": 0.1819964285714286
+  },
+  "uncertainty_al": {
+   "known_macro_f1": 0.3709229888732882,
+   "known_false_reject": 0.18087380697922165,
+   "unknown_recall": 0.3981409220979791,
+   "unknown_precision": 0.1575012789220833,
+   "known_attack_identified": 0.1848552987859807,
+   "novel_share": 0.07744642857142857
+  },
+  "netguard_ps": {
+   "known_macro_f1": 0.35125706947486623,
+   "known_false_reject": 0.18281166115526407,
+   "unknown_recall": 0.3949670468416186,
+   "unknown_precision": 0.13896420090444805,
+   "known_attack_identified": 0.18436005548479906,
+   "novel_share": 0.07267619047619049
+  },
+  "insomnia": {
+   "known_macro_f1": 0.9336693499250782,
+   "known_false_reject": 0.05619612635341112,
+   "unknown_recall": 0.08791441722037652,
+   "unknown_precision": 0.37230686949877306,
+   "known_attack_identified": NaN,
+   "novel_share": 0.2752
+  },
+  "periodic_retrain": {
+   "known_macro_f1": 0.5694803405991106,
+   "known_false_reject": 0.11265939111817667,
+   "unknown_recall": 0.41387341491468316,
+   "unknown_precision": 0.4287994544793339,
+   "known_attack_identified": 0.4112623762712205,
+   "novel_share": 0.163825
+  },
+  "static": {
+   "known_macro_f1": 0.9842614654833878,
+   "known_false_reject": 0.03098884421318196,
+   "unknown_recall": 0.11928554125138428,
+   "unknown_precision": 0.5937377111731855,
+   "known_attack_identified": NaN,
+   "novel_share": 0.2752
+  }
+ },
+ "decomposition IDS18 b0.10": {
+  "nova": {
+   "known_macro_f1": 0.7182310317274755,
+   "known_false_reject": 0.040299380713414344,
+   "unknown_recall": 0.6323530086441985,
+   "unknown_precision": 0.47777183816766566,
+   "known_attack_identified": 0.764443051846622,
+   "novel_share": 0.05667738095238095
+  },
+  "cbrs_replay": {
+   "known_macro_f1": 0.7826229142716903,
+   "known_false_reject": 0.04906963634707647,
+   "unknown_recall": 0.7088874355061406,
+   "unknown_precision": 0.32869549456311664,
+   "known_attack_identified": 0.7598118075580512,
+   "novel_share": 0.03276428571428571
+  },
+  "continual_replay": {
+   "known_macro_f1": 0.44886863949785893,
+   "known_false_reject": 0.1122885788907515,
+   "unknown_recall": 0.625317927476201,
+   "unknown_precision": 0.15713791896416474,
+   "known_attack_identified": 0.21575352860828653,
+   "novel_share": 0.03276428571428571
+  },
+  "guarded_selective": {
+   "known_macro_f1": 0.6790083072159633,
+   "known_false_reject": 0.03686231504337664,
+   "unknown_recall": 0.5232025488187753,
+   "unknown_precision": 0.5334829592673725,
+   "known_attack_identified": 0.2951849571253809,
+   "novel_share": 0.08335714285714285
+  },
+  "uncertainty_al": {
+   "known_macro_f1": 0.32543235685227084,
+   "known_false_reject": 0.10559272315729386,
+   "unknown_recall": 0.3318825817205297,
+   "unknown_precision": 0.11186722277078663,
+   "known_attack_identified": 0.08814389101745423,
+   "novel_share": 0.03856785714285714
+  },
+  "netguard_ps": {
+   "known_macro_f1": 0.3347975282412546,
+   "known_false_reject": 0.09074507378328456,
+   "unknown_recall": 0.3520508042799275,
+   "unknown_precision": 0.12423017440835783,
+   "known_attack_identified": 0.09697337002903751,
+   "novel_share": 0.03469880952380952
+  },
+  "insomnia": {
+   "known_macro_f1": 0.4259704536421305,
+   "known_false_reject": 0.024137684781832463,
+   "unknown_recall": 0.013740785801188005,
+   "unknown_precision": 0.05920317195333802,
+   "known_attack_identified": 0.0,
+   "novel_share": 0.09980714285714286
+  },
+  "periodic_retrain": {
+   "known_macro_f1": 0.452160651908832,
+   "known_false_reject": 0.12320456676980791,
+   "unknown_recall": 0.3637453673424897,
+   "unknown_precision": 0.09099968131044163,
+   "known_attack_identified": 0.24055243587797845,
+   "novel_share": 0.03276428571428571
+  },
+  "static": {
+   "known_macro_f1": 0.4774835231611034,
+   "known_false_reject": 0.03006101867060233,
+   "unknown_recall": 0.6126816002290131,
+   "unknown_precision": 0.6932294745442723,
+   "known_attack_identified": 0.0,
+   "novel_share": 0.09980714285714286
+  }
+ },
+ "decomposition UNSW b0.10": {
+  "nova": {
+   "known_macro_f1": 0.5096854531414213,
+   "known_false_reject": 0.053784142934509026,
+   "unknown_recall": 0.9697508896797155,
+   "unknown_precision": 0.03519017638934596,
+   "known_attack_identified": 0.8403467736743847,
+   "novel_share": 0.002007142857142857
+  },
+  "cbrs_replay": {
+   "known_macro_f1": 0.16424421334984532,
+   "known_false_reject": 0.22399164392255969,
+   "unknown_recall": 1.0,
+   "unknown_precision": 0.009048596744125911,
+   "known_attack_identified": 0.2617225334159249,
+   "novel_share": 0.0020130952380952383
+  },
+  "continual_replay": {
+   "known_macro_f1": 0.11815806065965583,
+   "known_false_reject": 0.2523698398725455,
+   "unknown_recall": 1.0,
+   "unknown_precision": 0.014450493067618789,
+   "known_attack_identified": 0.00010819151849277452,
+   "novel_share": 0.0036630952380952383
+  },
+  "guarded_selective": {
+   "known_macro_f1": 0.1426998579828506,
+   "known_false_reject": 0.305092474471895,
+   "unknown_recall": 1.0,
+   "unknown_precision": 0.05083061088044991,
+   "known_attack_identified": 0.01215598669636373,
+   "novel_share": 0.016075
+  },
+  "uncertainty_al": {
+   "known_macro_f1": 0.10942960661346517,
+   "known_false_reject": 0.30258086390514105,
+   "unknown_recall": 1.0,
+   "unknown_precision": 0.0037297529286189003,
+   "known_attack_identified": 0.028338206646853336,
+   "novel_share": 0.0011202380952380952
+  },
+  "netguard_ps": {
+   "known_macro_f1": 0.11267640887135986,
+   "known_false_reject": 0.2289129615481462,
+   "unknown_recall": 1.0,
+   "unknown_precision": 0.009637670036539531,
+   "known_attack_identified": 0.004295644817753868,
+   "novel_share": 0.0022214285714285717
+  },
+  "insomnia": {
+   "known_macro_f1": 0.15195707083850765,
+   "known_false_reject": 0.1394962192850946,
+   "unknown_recall": 0.9906404303928071,
+   "unknown_precision": 0.1044720456450694,
+   "known_attack_identified": 0.003697623514696685,
+   "novel_share": 0.016153571428571427
+  },
+  "periodic_retrain": {
+   "known_macro_f1": 0.11577459219459367,
+   "known_false_reject": 0.3109665762534433,
+   "unknown_recall": 1.0,
+   "unknown_precision": 0.010686635371267164,
+   "known_attack_identified": 0.037215400601879424,
+   "novel_share": 0.003347619047619047
+  },
+  "static": {
+   "known_macro_f1": 0.16513481669540866,
+   "known_false_reject": 0.30278510849665613,
+   "unknown_recall": 1.0,
+   "unknown_precision": 0.05143678737588816,
+   "known_attack_identified": 0.03637429643527205,
+   "novel_share": 0.016153571428571427
+  }
+ },
+ "decomposition UNSW b0.01": {
+  "nova": {
+   "known_macro_f1": 0.3825853661616592,
+   "known_false_reject": 0.12238992412057281,
+   "unknown_recall": 0.9144678516873194,
+   "unknown_precision": 0.017438839648830577,
+   "known_attack_identified": 0.6357755249351443,
+   "novel_share": 0.002330952380952381
+  },
+  "cbrs_replay": {
+   "known_macro_f1": 0.11400635001613328,
+   "known_false_reject": 0.31932372468793985,
+   "unknown_recall": 1.0,
+   "unknown_precision": 0.015353944093323205,
+   "known_attack_identified": 0.005395222776996212,
+   "novel_share": 0.0049595238095238095
+  },
+  "continual_replay": {
+   "known_macro_f1": 0.13709513799887754,
+   "known_false_reject": 0.2970329643299972,
+   "unknown_recall": 1.0,
+   "unknown_precision": 0.048154069958283245,
+   "known_attack_identified": 0.0,
+   "novel_share": 0.01475
+  },
+  "guarded_selective": {
+   "known_macro_f1": 0.13680707768327655,
+   "known_false_reject": 0.3011193560711698,
+   "unknown_recall": 1.0,
+   "unknown_precision": 0.04725951227969085,
+   "known_attack_identified": 0.00031759519168959367,
+   "novel_share": 0.014678571428571428
+  },
+  "uncertainty_al": {
+   "known_macro_f1": 0.09992900781482573,
+   "known_false_reject": 0.3188047006796307,
+   "unknown_recall": 1.0,
+   "unknown_precision": 0.007785612677471382,
+   "known_attack_identified": 0.0,
+   "novel_share": 0.0024928571428571426
+  },
+  "netguard_ps": {
+   "known_macro_f1": 0.11433153757995941,
+   "known_false_reject": 0.29567728786450426,
+   "unknown_recall": 1.0,
+   "unknown_precision": 0.016602521395616212,
+   "known_attack_identified": 0.0,
+   "novel_share": 0.0049595238095238095
+  },
+  "periodic_retrain": {
+   "known_macro_f1": 0.1537726380504485,
+   "known_false_reject": 0.2991010485378602,
+   "unknown_recall": 1.0,
+   "unknown_precision": 0.051137610978139646,
+   "known_attack_identified": 0.06736417086437176,
+   "novel_share": 0.015864285714285716
+  }
+ },
+ "bootstrap": {
+  "CIC17": {
+   "cbrs_replay": [
+    0.020232033571061042,
+    -0.004657344663598961,
+    0.04338927435769812
+   ],
+   "continual_replay": [
+    0.08088409832511305,
+    0.0299237437653814,
+    0.1375327518156864
+   ],
+   "guarded_selective": [
+    0.06822946385756823,
+    0.02793329455711555,
+    0.11486917745945925
+   ],
+   "uncertainty_al": [
+    0.11897366512900953,
+    0.04718619120303206,
+    0.19763298456378067
+   ],
+   "netguard_ps": [
+    0.12902757483698749,
+    0.04554194088107625,
+    0.21271904959980598
+   ],
+   "insomnia": [
+    0.22561903709731573,
+    0.09947461945782342,
+    0.35150404535697416
+   ],
+   "periodic_retrain": [
+    0.12225071688939852,
+    0.0428101206232896,
+    0.20476389905339784
+   ],
+   "static": [
+    0.2284669526020986,
+    0.09352064217416065,
+    0.3650100105662376
+   ]
+  },
+  "IDS18": {
+   "cbrs_replay": [
+    -4.2333976627355135e-05,
+    -0.01947309413532206,
+    0.01935369665176671
+   ],
+   "continual_replay": [
+    0.06944382373167433,
+    0.00541668329307444,
+    0.1543462293305048
+   ],
+   "guarded_selective": [
+    0.05591681496061837,
+    -0.00525371325896947,
+    0.1432520142442124
+   ],
+   "uncertainty_al": [
+    0.10607140629683408,
+    0.02227206639248675,
+    0.1993829349396662
+   ],
+   "netguard_ps": [
+    0.11638190428895093,
+    0.04197414715015521,
+    0.2063094479193121
+   ],
+   "insomnia": [
+    0.2507477793307571,
+    0.16127418408733316,
+    0.35547078252938863
+   ],
+   "periodic_retrain": [
+    0.10782803356305226,
+    0.0316561597382577,
+    0.22271366314559837
+   ],
+   "static": [
+    0.12014706475562745,
+    0.022548403053887354,
+    0.21881516349013522
+   ]
+  },
+  "UNSW": {
+   "cbrs_replay": [
+    0.243376042019439,
+    0.17221557079684482,
+    0.31425676187848467
+   ],
+   "continual_replay": [
+    0.19467538967661976,
+    0.1293208377196179,
+    0.25782389691239244
+   ],
+   "guarded_selective": [
+    0.031155054037899563,
+    0.0031412421990566447,
+    0.05421178987375584
+   ],
+   "uncertainty_al": [
+    0.29256321352368075,
+    0.2103794170868555,
+    0.3733975700981896
+   ],
+   "netguard_ps": [
+    0.23430884722537287,
+    0.16452405759530586,
+    0.2999820102776983
+   ],
+   "insomnia": [
+    0.032150577353319665,
+    0.003157842355614939,
+    0.0560678834849007
+   ],
+   "periodic_retrain": [
+    0.19761975600154608,
+    0.13310804505892324,
+    0.26152567544657923
+   ],
+   "static": [
+    0.02573555227121116,
+    -0.0011367522242002176,
+    0.047807437106918274
+   ]
+  }
+ },
+ "bootstrap_b001": {
+  "CIC17": {
+   "cbrs_replay": [
+    0.06491640699761733,
+    0.013527610039247056,
+    0.11619241749918041
+   ],
+   "continual_replay": [
+    0.12084945243503518,
+    0.03789186656386395,
+    0.19813384508704482
+   ],
+   "guarded_selective": [
+    0.09098540511601345,
+    0.02963769692466632,
+    0.16991262423445722
+   ],
+   "uncertainty_al": [
+    0.16346276776202476,
+    0.05626313883876026,
+    0.2702470696788683
+   ],
+   "netguard_ps": [
+    0.1437662844248562,
+    0.04437980539780784,
+    0.24865050442728198
+   ],
+   "periodic_retrain": [
+    0.14384431504037068,
+    0.051499542857861555,
+    0.23263045322315165
+   ]
+  },
+  "IDS18": {
+   "cbrs_replay": [
+    0.017632381773972777,
+    -0.0017532996238071748,
+    0.050236498047266785
+   ],
+   "continual_replay": [
+    0.09909762605643904,
+    0.024724614707244977,
+    0.18041354079566269
+   ],
+   "guarded_selective": [
+    0.07702692671141066,
+    0.012882695636059595,
+    0.15268440754469448
+   ],
+   "uncertainty_al": [
+    0.11785559904837269,
+    0.021855912229488794,
+    0.22141352913994744
+   ],
+   "netguard_ps": [
+    0.10907922207044034,
+    0.027194186438513162,
+    0.19669201713628814
+   ],
+   "periodic_retrain": [
+    0.1374285921418347,
+    0.05086335605612378,
+    0.23770390766419378
+   ]
+  },
+  "UNSW": {
+   "cbrs_replay": [
+    0.10145337589144857,
+    0.022357906312734335,
+    0.17152691077819746
+   ],
+   "continual_replay": [
+    -0.03409548632655265,
+    -0.08829468418680478,
+    0.005854766792073045
+   ],
+   "guarded_selective": [
+    -0.03355251098062641,
+    -0.08774583513555345,
+    0.007015446352450143
+   ],
+   "uncertainty_al": [
+    0.17947811875235983,
+    0.09704433858011284,
+    0.2611816797725831
+   ],
+   "netguard_ps": [
+    0.0934159851348549,
+    0.019283285634516742,
+    0.1616789060367911
+   ],
+   "periodic_retrain": [
+    -0.054645811905339466,
+    -0.10589487932236996,
+    -0.014282679364092929
+   ]
+  }
+ },
+ "bootstrap_fpr": {
+  "CIC17": {
+   "cbrs_replay": [
+    -0.04007958165585888,
+    -0.08840822048496437,
+    -0.004717064958042518
+   ],
+   "continual_replay": [
+    -0.04738457015834504,
+    -0.09915269805866973,
+    -0.004926238213972867
+   ],
+   "guarded_selective": [
+    -0.03165567518597981,
+    -0.07904542161941222,
+    0.0011423376460816008
+   ],
+   "uncertainty_al": [
+    -0.04019192090851179,
+    -0.09050601719927302,
+    -0.001444689853215549
+   ],
+   "netguard_ps": [
+    -0.03859728176068265,
+    -0.07463830482845883,
+    -0.005399008556814054
+   ],
+   "insomnia": [
+    -0.11680503670760226,
+    -0.18005400966108118,
+    -0.061501330006753
+   ],
+   "periodic_retrain": [
+    -0.042412988350522984,
+    -0.08434877962939653,
+    -0.0063167350658916
+   ],
+   "static": [
+    -0.021157217747390062,
+    -0.06214235618009418,
+    0.007927278964640787
+   ]
+  },
+  "IDS18": {
+   "cbrs_replay": [
+    -0.02747242364136058,
+    -0.06897181504898896,
+    -0.003855668389263683
+   ],
+   "continual_replay": [
+    -0.02127794022682989,
+    -0.05917343219866925,
+    -0.0018238064722516422
+   ],
+   "guarded_selective": [
+    0.009442378740762987,
+    -0.0017000676166664605,
+    0.030034613836955187
+   ],
+   "uncertainty_al": [
+    -0.022484509028338113,
+    -0.062017084462645394,
+    -0.002517449566407344
+   ],
+   "netguard_ps": [
+    -0.01727618360004288,
+    -0.047670598922747304,
+    -0.002005670919798571
+   ],
+   "insomnia": [
+    -0.23399363429530168,
+    -0.3035630412432901,
+    -0.1962848659956279
+   ],
+   "periodic_retrain": [
+    -0.066058489820863,
+    -0.17563123921779816,
+    -0.007176524770047862
+   ],
+   "static": [
+    0.0016790332111017384,
+    -0.005484478767036708,
+    0.012944562690937085
+   ]
+  },
+  "UNSW": {
+   "cbrs_replay": [
+    -0.06266993541110223,
+    -0.10114504515813824,
+    -0.03474800142321613
+   ],
+   "continual_replay": [
+    -0.04405693343107341,
+    -0.07948823260478656,
+    -0.02113316166949602
+   ],
+   "guarded_selective": [
+    -0.13034619601072103,
+    -0.18817294771158583,
+    -0.0781103088122329
+   ],
+   "uncertainty_al": [
+    -0.11671293169738726,
+    -0.17510017397798452,
+    -0.0704614458139805
+   ],
+   "netguard_ps": [
+    -0.010547644082151532,
+    -0.01822567843184424,
+    -0.002806427095168854
+   ],
+   "insomnia": [
+    -0.1414431092127543,
+    -0.20118812257497481,
+    -0.08681215367027603
+   ],
+   "periodic_retrain": [
+    -0.13158303191871415,
+    -0.18979532111931008,
+    -0.07972779905102802
+   ],
+   "static": [
+    -0.13213018208658475,
+    -0.18999309004842085,
+    -0.0798067272543716
+   ]
+  }
+ }
+}
