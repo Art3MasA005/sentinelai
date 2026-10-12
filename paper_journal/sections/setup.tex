@@ -97,8 +97,12 @@ them after the main results (the ablations and the low budget) change nothing in
 \subsection{Experiments, statistics and implementation}
 \Cref{tab:experiments} maps the experiments to the research questions. Each configuration runs with three seeds;
 the seed changes model initialisation, label sampling and clustering, not the data. We report the mean and
-standard deviation over seeds. We also report a paired Wilcoxon signed-rank test on the per-window OW-F1 of
-\nova{} against each method, averaged over seeds; windows are autocorrelated, so the $p$-values are indicative.
+standard deviation over seeds. To compare \nova{} with another method, we take the per-window difference of their
+seed-averaged OW-F1 (or false-positive rate) and report its mean with a 95\% moving-block bootstrap
+interval~\cite{kunsch1989jackknife}: blocks of five consecutive windows, 10{,}000 resamples. Consecutive windows are
+autocorrelated, and resampling blocks rather than single windows respects this; a test that treats windows as
+independent, such as a paired Wilcoxon test, would overstate certainty. We call a difference significant only if
+the interval excludes zero.
 
 Everything is implemented in Python (scikit-learn, NumPy) inside an open-source research console that stores
 the configuration, data hash, model versions, adaptation decisions and per-flow predictions of every run. Tree
