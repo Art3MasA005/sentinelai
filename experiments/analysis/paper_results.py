@@ -123,6 +123,37 @@ def paper_rows(g: dict, order: list[str]) -> str:
     return "\n".join(lines) + "\n"
 
 
+DATASET_NAMES = {"CIC17": "CIC-IDS2017", "IDS18": "CSE-CIC-IDS2018", "UNSW": "UNSW-NB15"}
+
+
+def budget_rows(data, budget: str) -> str:
+    """One row per method, OW-F1 and FPR per dataset at one label budget (methods run on every dataset only)."""
+    groups = [g for g in sorted(data, key=lambda g: ("CIC17", "IDS18", "UNSW").index(g.split()[0])
+                                if g.split()[0] in ("CIC17", "IDS18", "UNSW") else 9)
+              if g.endswith(f"main {budget}")]
+    if not groups:
+        return ""
+    variants = set.intersection(*(set(data[g]) for g in groups))
+    order = sorted(variants, key=lambda v: (v != "nova", v))
+    best = {}
+    for g in groups:
+        for key, higher in (("macro_f1_ow", True), ("detect_fpr", False)):
+            means = [agg(data[g][v], key)[0] for v in order]
+            best[g, key] = (max if higher else min)(means)
+    lines = [r"\multicolumn{1}{@{}l}{} & " + " & ".join(rf"\multicolumn{{2}}{{c}}{{{DATASET_NAMES.get(g.split()[0], g.split()[0])}}}" for g in groups)
+             + r" \\", "Method & " + " & ".join("OW-F1 & FPR" for _ in groups) + r" \\", r"\midrule"]
+    for v in order:
+        cells = []
+        for g in groups:
+            for key in ("macro_f1_ow", "detect_fpr"):
+                m = agg(data[g][v], key)[0]
+                txt = f"{100 * m:.1f}" if key == "detect_fpr" else f"{m:.3f}"
+                cells.append(rf"\textbf{{{txt}}}" if abs(m - best[g, key]) < 1e-12 else txt)
+        name = DISPLAY.get(v, v.replace("_", r"\_"))
+        lines.append(f"{name} & " + " & ".join(cells) + r" \\")
+    return "\n".join(lines) + "\n"
+
+
 def write_tables(data, out: Path) -> str:
     md = []
     for group in sorted(data):
@@ -159,6 +190,9 @@ def write_tables(data, out: Path) -> str:
         (out / f"{slug}.csv").write_text("\n".join(csv), encoding="utf-8")
         (out / f"{slug}.tex").write_text("\n".join(tex), encoding="utf-8")
         (out / f"{slug}_paper.tex").write_text(paper_rows(g, order), encoding="utf-8")
+    low = budget_rows(data, "b0.01")
+    if low:
+        (out / "budget_b001_paper.tex").write_text(low, encoding="utf-8")
     text = "\n".join(md)
     (out / "tables.md").write_text("# Results (mean ± std over seeds)\n" + text + "\n", encoding="utf-8")
     return text
