@@ -1,0 +1,39 @@
+\section{Discussion and Threats to Validity}
+\label{sec:discussion}
+
+\textbf{False positives depend on calibration.} Most benign flows flagged by any method are \unk{} decisions, not
+attack labels; their rate is set largely by the open-world quantiles (2\% and 99\%), which all methods share. A
+2.8\% review rate is still large in absolute terms: at one million benign flows a day it would mean about 28{,}000
+reviews (the base-rate fallacy~\cite{arp2022dos}). The quantiles trade review load against recall for every
+method alike. We fixed them before the experiments and did not tune them per dataset.
+
+\textbf{Would a learned representation help?} To test whether the hard classes are a representation problem,
+we ran an offline probe on CIC-IDS2017 only. At three points in the stream, we trained an embedding on the
+labelled pool a 10\%-budget method would have. It was trained either with class-balanced prototypical
+episodes~\cite{snell2017prototypical}, or with the same episodes plus one known class held out per episode as a
+pseudo-unknown~\cite{liu2020peeler}. We then measured how well the $k$-NN distance to benign flows separates
+future unseen attacks. Both embeddings keep the benign false-positive rate close to its 1\% target on later
+traffic (0.7--1.4\%, against 3.0--5.6\% for raw features), and they raise the detection rate at that threshold for
+DDoS (0.16 to 0.66) and SQL injection (0 to 0.67). They lose Infiltration, however (1.0 to 0), and the open-set
+episodes add nothing over plain prototypical training. Bot, PortScan and XSS stay below 5\% detection in every
+representation. The remaining errors on these classes therefore reflect overlap with benign traffic in the flow
+features, not a lack of capacity, and we did not add the embedding to \nova{}.
+
+\textbf{Dataset errors cap every method.} Some CIC-IDS2017 port-scan flows are feature-identical to benign flows,
+and Web Attack -- Brute Force and XSS are barely separable~\cite{engelen2021troubleshooting,lanvin2022errors}.
+SSH-Patator and slowloris occur only before any label can arrive under a one-window delay, so no adaptive method
+can learn them in time. Several CSE-CIC-IDS2018 day files are truncated at 1{,}048{,}575 rows in the published
+CSVs. Results on the corrected CIC-IDS2017~\cite{engelen2021troubleshooting} are future work.
+
+\textbf{Short time spans.} The datasets cover two to ten days, so the stream mixes attack onset with modest benign
+drift; long-term benign drift is under-represented.
+
+\textbf{Re-implemented baselines.} Baselines are re-implemented in a common multi-class framework with the same
+classifier and labelling cost, not run from the authors' code; what each keeps from its paper is documented in our
+repository. NetGuard's generative augmentation is not reproduced.
+
+\textbf{Simulated analyst.} The oracle returns correct labels with a fixed delay; real analysts make mistakes and
+answer at variable speed.
+
+\textbf{Hyper-parameters} were frozen after two development runs on CIC-IDS2017 and reused unchanged on the other
+datasets.

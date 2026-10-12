@@ -1,0 +1,14 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+Evaluated under realistic conditions---chronological replay, attack classes that appear after training, and a
+small, delayed labelling budget---intrusion detectors that are trained once collapse, and simple retraining
+schemes forget or flood analysts with reviews. \nova{} combines class-conditional open-world rejection, a
+novelty-weighted and diverse query, conservative label propagation, a class-balanced memory and a guarded
+deployment loop. Under the same labelling cost it is the best or tied-best method on open-world macro-F1 on
+all three datasets and has the lowest false-positive rate on all three. Its lead is largest where labels are
+scarcest (nine points at a 1\% budget) and where traffic drifts across the training boundary (UNSW-NB15). Its
+accuracy lead did not carry over to an MLP classifier, and short-lived attacks that look like benign traffic
+remain undetected by every method we tried, including a meta-learned embedding. Both are open problems for
+future work. All runs,
+configurations and per-flow predictions are released with the SentinelAI console.

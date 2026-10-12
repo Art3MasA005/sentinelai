@@ -1,0 +1,13 @@
+{
+  "name": "CIC-IDS2017 · static",
+  "dataset_id": "CIC-IDS2017",
+  "profile": "cicids2017",
+  "seed": 42,
+  "model": {"kind": "hist_gb"},
+  "split": {"train_fraction": 0.3, "val_fraction": 0.2, "window_size": 4000, "max_rows": 400000},
+  "openworld": {"method": "msp+centroid", "msp_quantile": 0.02, "distance_quantile": 0.99},
+  "drift": {"detectors": ["ks", "psi", "confidence"]},
+  "labels": {"delay_windows": 1, "budget": 0.1},
+  "adaptation": {"method": "static", "retrain_every": 5, "memory_windows": 5},
+  "notes": "Real data: CIC-IDS2017 TrafficLabelling CSVs (GeneratedLabelledFlows.zip), 400k rows evenly sampled over Mon-Fri. Cite Sharafaldin et al., ICISSP 2018."
+}

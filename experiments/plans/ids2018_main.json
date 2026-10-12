@@ -1,0 +1,71 @@
+{
+ "group": "IDS18 main b0.10",
+ "base": "../experiments/configs/cic2018_static.json",
+ "seeds": [
+  1,
+  2,
+  3
+ ],
+ "set": {
+  "store_features": false,
+  "flow_storage": "file",
+  "openworld.method": "msp+knn",
+  "adaptation.buffer_size": 20000
+ },
+ "variants": [
+  {
+   "name": "static",
+   "set": {
+    "adaptation.method": "static"
+   }
+  },
+  {
+   "name": "periodic_retrain",
+   "set": {
+    "adaptation.method": "periodic_retrain"
+   }
+  },
+  {
+   "name": "continual_replay",
+   "set": {
+    "adaptation.method": "continual_replay"
+   }
+  },
+  {
+   "name": "guarded_selective",
+   "set": {
+    "adaptation.method": "guarded_selective"
+   }
+  },
+  {
+   "name": "uncertainty_al",
+   "set": {
+    "adaptation.method": "uncertainty_al"
+   }
+  },
+  {
+   "name": "insomnia",
+   "set": {
+    "adaptation.method": "insomnia"
+   }
+  },
+  {
+   "name": "netguard_ps",
+   "set": {
+    "adaptation.method": "netguard_ps"
+   }
+  },
+  {
+   "name": "cbrs_replay",
+   "set": {
+    "adaptation.method": "cbrs_replay"
+   }
+  },
+  {
+   "name": "nova",
+   "set": {
+    "adaptation.method": "nova"
+   }
+  }
+ ]
+}

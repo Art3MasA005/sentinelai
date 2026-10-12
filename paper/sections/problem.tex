@@ -1,0 +1,38 @@
+\section{Problem Setting and Protocol}
+\label{sec:problem}
+
+\textbf{Stream.} Flows $(x_t, y_t)$ arrive in timestamp order, where $x_t \in \mathbb{R}^d$ are flow features and
+$y_t$ is one of a class set that grows over time. A model is trained on an initial period whose classes $C_0$
+are known. The rest of the stream is processed in windows $W_1, W_2, \dots$ of $n$ flows each.
+
+\textbf{Decisions.} For each flow the deployed model outputs a known class or \unk{}. \unk{} means
+``unfamiliar to this model, send to an analyst''; it is neither an alarm nor a statement that the flow is
+malicious.
+
+\textbf{Labels.} After predicting $W_w$, a method may request ground truth for at most $B\cdot n$ flows of
+$W_w$ (budget $B$). The labels arrive at window $w+\delta$ (delay $\delta$). A label oracle is the only
+path to ground truth: it enforces the budget and delay and counts every label it hands out. Methods that do
+not choose which flows to label receive a uniform random sample of the budget.
+
+\textbf{Deployment.} A method may replace the deployed model after any window; the new model affects only later
+windows. There is no look-ahead: preprocessing statistics are fitted on the training period only, and the last
+fraction of the training period is held out as a fixed reference set used to measure forgetting. The reference
+set keeps only classes that occur in the fitted part of the training period: a class that first appears in the
+reference period (SSH-Patator in CIC-IDS2017) was never learned, and keeping it would turn ``forgetting'' into a
+measure of unknown-attack detection.
+
+\textbf{Metrics.} Let $\mathcal{C}$ be the set of all true classes in the stream. Standard open-set macro-F1 maps
+a flow to \unk{} when its class is unknown to the model that scored it, so two methods that learn different
+classes are scored on different label sets. We therefore report
+\begin{itemize}
+\item \emph{open-world macro-F1} (OW-F1): macro-F1 over the fixed set $\mathcal{C}$, where a flow counts as
+      correct if the decision is its true class, or if its class is unknown to the deployed model and the decision
+      is \unk{};
+\item \emph{AUT(OW-F1)}: the area under the per-window OW-F1 curve, normalised to $[0,1]$~\cite{pendlebury2019tesseract};
+\item binary \emph{detection} F1, recall and false-positive rate, where a flow is flagged when the decision is not
+      benign (an attack class or \unk{}; both reach an analyst), for comparison with binary NIDS work;
+\item \emph{unknown AUROC}: how well the open-world score separates flows of classes unknown to the deployed
+      model from known-class flows;
+\item \emph{maximum forgetting}: the largest drop of macro-F1 on the reference set below its running maximum;
+\item labels used and training time.
+\end{itemize}

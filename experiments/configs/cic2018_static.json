@@ -1,0 +1,37 @@
+{
+  "name": "CSE-CIC-IDS2018 \u00b7 static",
+  "dataset_id": "CSE-CIC-IDS2018-k8",
+  "profile": "cicids2018",
+  "seed": 42,
+  "model": {
+    "kind": "hist_gb"
+  },
+  "split": {
+    "train_fraction": 0.3,
+    "val_fraction": 0.2,
+    "window_size": 4000,
+    "max_rows": 400000
+  },
+  "openworld": {
+    "method": "msp+centroid",
+    "msp_quantile": 0.02,
+    "distance_quantile": 0.99
+  },
+  "drift": {
+    "detectors": [
+      "ks",
+      "psi",
+      "confidence"
+    ]
+  },
+  "labels": {
+    "delay_windows": 1,
+    "budget": 0.1
+  },
+  "adaptation": {
+    "method": "static",
+    "retrain_every": 5,
+    "memory_windows": 5
+  },
+  "notes": "Real data: CSE-CIC-IDS2018 Processed Traffic Data for ML (AWS open data), thinned 1-in-8 per file (experiments/analysis/thin_dataset.py), 400k rows evenly sampled over 14 Feb - 2 Mar 2018. Several day files are truncated at 1,048,575 rows in the published CSVs."
+}

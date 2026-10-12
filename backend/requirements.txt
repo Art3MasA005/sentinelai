@@ -1,0 +1,18 @@
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic>=2.7
+pydantic-settings>=2.3
+numpy>=2.0
+pandas>=2.2
+scipy>=1.13
+scikit-learn>=1.5
+lightgbm>=4.3
+psutil>=5.9
+matplotlib>=3.8          # paper figures (P5)
+# Neural model (kind="mlp"). Uses the GPU when the build has CUDA (paper runs: torch 2.14.1+cu130, RTX 3060):
+#   GPU: pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cu130
+#   CPU: pip install torch --index-url https://download.pytorch.org/whl/cpu
+torch>=2.3
+# dev / tests
+pytest>=8
+httpx>=0.27

@@ -1,0 +1,30 @@
+{
+ "group": "UNSW ablation b0.10",
+ "base": "../experiments/configs/unsw_static.json",
+ "seeds": [
+  1,
+  2,
+  3
+ ],
+ "set": {
+  "store_features": false,
+  "flow_storage": "file",
+  "openworld.method": "msp+knn",
+  "adaptation.buffer_size": 20000,
+  "split.holdout_classes": [
+   "DoS",
+   "Reconnaissance",
+   "Shellcode",
+   "Worms"
+  ]
+ },
+ "variants": [
+  {
+   "name": "nova -calibration store",
+   "set": {
+    "adaptation.method": "nova",
+    "adaptation.calib_per_class": 0
+   }
+  }
+ ]
+}
