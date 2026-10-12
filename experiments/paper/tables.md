@@ -78,6 +78,12 @@
 | static | 3 | 0.378 ± 0.000 | 0.751 ± 0.000 | 0.284 ± 0.000 | 0.513 ± 0.000 | 0.407 ± 0.000 | 0.032 ± 0.000 | 0.764 ± 0.001 | **0.000 ± 0.000** | 0 | 18 | 1.5e-05 |
 | uncertainty_al | 3 | 0.592 ± 0.042 | 0.763 ± 0.009 | 0.473 ± 0.051 | 0.633 ± 0.067 | 0.581 ± 0.091 | 0.043 ± 0.000 | 0.742 ± 0.017 | 0.003 ± 0.000 | 27,600 | 370 | 1.3e-07 |
 
+### UNSW ablation b0.10
+
+| Method | n | OW macro-F1 | AUT(OW-F1) | Attack macro-recall | Detect F1 | Detect recall | Detect FPR | Unknown AUROC | Max forgetting | Labels | Train s | p (NOVA vs) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| nova -calibration store | 3 | **0.418 ± 0.035** | **0.418 ± 0.026** | **0.278 ± 0.036** | **0.818 ± 0.015** | **1.000 ± 0.000** | **0.091 ± 0.009** | **0.985 ± 0.001** | **0.003 ± 0.000** | 27,600 | 918 |  |
+
 ### UNSW main b0.01
 
 | Method | n | OW macro-F1 | AUT(OW-F1) | Attack macro-recall | Detect F1 | Detect recall | Detect FPR | Unknown AUROC | Max forgetting | Labels | Train s | p (NOVA vs) |
