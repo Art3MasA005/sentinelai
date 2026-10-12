@@ -1,0 +1,352 @@
+{
+ "CIC17": {
+  "classes": [
+   {
+    "class": "BENIGN",
+    "source": 2273097,
+    "sample": 321408,
+    "training": 94891,
+    "first_window": "train",
+    "stream": 202944
+   },
+   {
+    "class": "DoS Hulk",
+    "source": 231073,
+    "sample": 32615,
+    "training": 0,
+    "first_window": 9,
+    "stream": 32615
+   },
+   {
+    "class": "PortScan",
+    "source": 158930,
+    "sample": 22456,
+    "training": 0,
+    "first_window": 53,
+    "stream": 22456
+   },
+   {
+    "class": "DDoS",
+    "source": 128027,
+    "sample": 18095,
+    "training": 0,
+    "first_window": 62,
+    "stream": 18095
+   },
+   {
+    "class": "DoS GoldenEye",
+    "source": 10293,
+    "sample": 1435,
+    "training": 0,
+    "first_window": 18,
+    "stream": 1435
+   },
+   {
+    "class": "FTP-Patator",
+    "source": 7938,
+    "sample": 1109,
+    "training": 1109,
+    "first_window": "train",
+    "stream": 0
+   },
+   {
+    "class": "SSH-Patator",
+    "source": 5897,
+    "sample": 768,
+    "training": 0,
+    "first_window": 0,
+    "stream": 341
+   },
+   {
+    "class": "DoS slowloris",
+    "source": 5796,
+    "sample": 787,
+    "training": 0,
+    "first_window": 6,
+    "stream": 787
+   },
+   {
+    "class": "DoS Slowhttptest",
+    "source": 5499,
+    "sample": 775,
+    "training": 0,
+    "first_window": 7,
+    "stream": 775
+   },
+   {
+    "class": "Bot",
+    "source": 1966,
+    "sample": 242,
+    "training": 0,
+    "first_window": 46,
+    "stream": 242
+   },
+   {
+    "class": "Web Attack - Brute Force",
+    "source": 1507,
+    "sample": 206,
+    "training": 0,
+    "first_window": 29,
+    "stream": 206
+   },
+   {
+    "class": "Web Attack - XSS",
+    "source": 652,
+    "sample": 99,
+    "training": 0,
+    "first_window": 31,
+    "stream": 99
+   },
+   {
+    "class": "Infiltration",
+    "source": 36,
+    "sample": 2,
+    "training": 0,
+    "first_window": 37,
+    "stream": 2
+   },
+   {
+    "class": "Web Attack - Sql Injection",
+    "source": 21,
+    "sample": 3,
+    "training": 0,
+    "first_window": 32,
+    "stream": 3
+   },
+   {
+    "class": "Heartbleed",
+    "source": 11,
+    "sample": 0,
+    "training": 0,
+    "first_window": "--",
+    "stream": 0
+   }
+  ],
+  "rows_sample": 400000,
+  "skipped_rows": 41229,
+  "duplicate_rows_in_sample": 23736,
+  "stream_rows_identical_to_a_training_row": 6417,
+  "train_end_ts": 1499179380.0,
+  "stream_start_ts": 1499179380.0
+ },
+ "IDS18": {
+  "classes": [
+   {
+    "class": "Benign",
+    "source": 1685739,
+    "sample": 332290,
+    "training": 70409,
+    "first_window": "train",
+    "stream": 237881
+   },
+   {
+    "class": "DDOS attack-HOIC",
+    "source": 85461,
+    "sample": 16849,
+    "training": 0,
+    "first_window": 38,
+    "stream": 16849
+   },
+   {
+    "class": "DDoS attacks-LOIC-HTTP",
+    "source": 72027,
+    "sample": 14196,
+    "training": 23,
+    "first_window": "train",
+    "stream": 14173
+   },
+   {
+    "class": "DoS attacks-Hulk",
+    "source": 57924,
+    "sample": 11434,
+    "training": 11434,
+    "first_window": "train",
+    "stream": 0
+   },
+   {
+    "class": "Bot",
+    "source": 35789,
+    "sample": 7045,
+    "training": 0,
+    "first_window": 63,
+    "stream": 7045
+   },
+   {
+    "class": "FTP-BruteForce",
+    "source": 24184,
+    "sample": 4772,
+    "training": 4772,
+    "first_window": "train",
+    "stream": 0
+   },
+   {
+    "class": "SSH-Bruteforce",
+    "source": 23421,
+    "sample": 4615,
+    "training": 4615,
+    "first_window": "train",
+    "stream": 0
+   },
+   {
+    "class": "Infilteration",
+    "source": 20198,
+    "sample": 3996,
+    "training": 0,
+    "first_window": 57,
+    "stream": 3996
+   },
+   {
+    "class": "DoS attacks-SlowHTTPTest",
+    "source": 17487,
+    "sample": 3449,
+    "training": 3449,
+    "first_window": "train",
+    "stream": 0
+   },
+   {
+    "class": "DoS attacks-GoldenEye",
+    "source": 5165,
+    "sample": 1015,
+    "training": 1015,
+    "first_window": "train",
+    "stream": 0
+   },
+   {
+    "class": "DoS attacks-Slowloris",
+    "source": 1402,
+    "sample": 283,
+    "training": 283,
+    "first_window": "train",
+    "stream": 0
+   },
+   {
+    "class": "DDOS attack-LOIC-UDP",
+    "source": 209,
+    "sample": 33,
+    "training": 0,
+    "first_window": 44,
+    "stream": 33
+   },
+   {
+    "class": "Brute Force -Web",
+    "source": 73,
+    "sample": 14,
+    "training": 0,
+    "first_window": 48,
+    "stream": 14
+   },
+   {
+    "class": "Brute Force -XSS",
+    "source": 27,
+    "sample": 7,
+    "training": 0,
+    "first_window": 45,
+    "stream": 7
+   },
+   {
+    "class": "SQL Injection",
+    "source": 14,
+    "sample": 2,
+    "training": 0,
+    "first_window": 46,
+    "stream": 2
+   }
+  ],
+  "rows_sample": 400000,
+  "skipped_rows": 0,
+  "duplicate_rows_in_sample": 52964,
+  "stream_rows_identical_to_a_training_row": 19987,
+  "train_end_ts": 1519095964.0,
+  "stream_start_ts": 1519095965.0
+ },
+ "UNSW": {
+  "classes": [
+   {
+    "class": "Normal",
+    "source": 2218764,
+    "sample": 349356,
+    "training": 92519,
+    "first_window": "train",
+    "stream": 232837
+   },
+   {
+    "class": "Generic",
+    "source": 215481,
+    "sample": 33783,
+    "training": 1162,
+    "first_window": "train",
+    "stream": 32621
+   },
+   {
+    "class": "Exploits",
+    "source": 44525,
+    "sample": 7214,
+    "training": 864,
+    "first_window": "train",
+    "stream": 6350
+   },
+   {
+    "class": "Fuzzers",
+    "source": 24246,
+    "sample": 3864,
+    "training": 808,
+    "first_window": "train",
+    "stream": 3056
+   },
+   {
+    "class": "DoS",
+    "source": 16353,
+    "sample": 2563,
+    "training": 0,
+    "first_window": 12,
+    "stream": 2389
+   },
+   {
+    "class": "Reconnaissance",
+    "source": 13987,
+    "sample": 2169,
+    "training": 0,
+    "first_window": 12,
+    "stream": 1903
+   },
+   {
+    "class": "Analysis",
+    "source": 2677,
+    "sample": 438,
+    "training": 90,
+    "first_window": "train",
+    "stream": 348
+   },
+   {
+    "class": "Backdoor",
+    "source": 2329,
+    "sample": 353,
+    "training": 88,
+    "first_window": "train",
+    "stream": 265
+   },
+   {
+    "class": "Shellcode",
+    "source": 1511,
+    "sample": 235,
+    "training": 0,
+    "first_window": 12,
+    "stream": 211
+   },
+   {
+    "class": "Worms",
+    "source": 174,
+    "sample": 25,
+    "training": 0,
+    "first_window": 13,
+    "stream": 20
+   }
+  ],
+  "rows_sample": 400000,
+  "skipped_rows": 0,
+  "duplicate_rows_in_sample": 55746,
+  "stream_rows_identical_to_a_training_row": 122,
+  "train_end_ts": 1421958678.0,
+  "stream_start_ts": 1421958678.0
+ }
+}

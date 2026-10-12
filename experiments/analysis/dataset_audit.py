@@ -25,7 +25,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "backend"))
 
 from app.config import get_settings  # noqa: E402
-from app.ml.data import _strip_columns, load_dataset, normalize_labels  # noqa: E402
+from app.ml.data import _read_csv, _strip_columns, load_dataset, normalize_labels  # noqa: E402
 from app.services import datasets as ds_service  # noqa: E402
 
 DATASETS = [("CIC17", "CIC-IDS2017", "cicids2017", []), ("IDS18", "CSE-CIC-IDS2018-k8", "cicids2018", []),
@@ -34,22 +34,14 @@ WINDOW, TRAIN_FRACTION, VAL_FRACTION, MAX_ROWS = 4000, 0.3, 0.2, 400_000
 
 
 def source_counts(files, profile) -> pd.Series:
+    """Label counts over all rows, read with the same reader and label normalisation as the replay."""
     counts = pd.Series(dtype="int64")
     for f in files:
-        for enc in ("utf-8", "latin-1"):
-            try:
-                reader = pd.read_csv(f, chunksize=500_000, low_memory=False, encoding=enc, dtype=str)
-                for chunk in reader:
-                    chunk = _strip_columns(chunk)
-                    if profile.label_column not in chunk:
-                        continue
-                    lab = normalize_labels(chunk[profile.label_column], profile).fillna("")
-                    lab = lab[lab.str.strip() != ""]
-                    counts = counts.add(lab.value_counts(), fill_value=0)
-                break
-            except UnicodeDecodeError:
-                counts = pd.Series(dtype="int64") if enc == "utf-8" else counts
-                continue
+        for chunk in _read_csv(f, profile, low_memory=False, chunksize=500_000, dtype=str):
+            chunk = _strip_columns(chunk)
+            lab = normalize_labels(chunk[profile.label_column], profile).fillna("")
+            lab = lab[lab.str.strip() != ""]
+            counts = counts.add(lab.value_counts(), fill_value=0)
     return counts.astype(int)
 
 
