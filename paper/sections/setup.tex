@@ -5,8 +5,8 @@
 From each we take 400{,}000 flows evenly spaced over time (deterministic); the first 30\% form the training
 period (its last 20\% is the reference set) and the remaining 280{,}000 flows form 70 windows of 4{,}000 flows.
 CIC-IDS2017~\cite{sharafaldin2018} uses the \texttt{TrafficLabelling} CSVs, whose timestamps lack AM/PM; we
-restore afternoon times. Its training period (Monday and Tuesday morning) contains only benign traffic and
-FTP-Patator, so twelve attack classes are new. For CSE-CIC-IDS2018 we use the ``Processed Traffic Data for ML''
+restore afternoon times. The fitted part of its training period (Monday and Tuesday morning) contains only
+benign traffic and FTP-Patator, so twelve attack classes are new. For CSE-CIC-IDS2018 we use the ``Processed Traffic Data for ML''
 CSVs, thinned to one row in eight per file before sampling; seven attack classes are known at training time and
 seven appear later. In UNSW-NB15~\cite{moustafa2015unsw} every class already occurs in the first capture day, so,
 as is common in open-set NIDS work, we remove DoS, Reconnaissance, Shellcode and Worms from the training

@@ -6,12 +6,14 @@
 flows evenly spaced over time, deterministically, so that every method and seed sees the same data. The first
 30\% form the training period. The last 20\% of the training period is the reference set (\cref{sec:problem}),
 and the remaining 280{,}000 flows form 70 windows of 4{,}000 flows. Rows without a valid timestamp or label are
-skipped when reading.
+skipped when reading; the audit at the end of this subsection lists every class and how the rows were
+handled.
 
 \textbf{CIC-IDS2017}~\cite{sharafaldin2018} covers five working days of a testbed network. We use the
 \texttt{TrafficLabelling} CSVs, the variant that keeps timestamps; their afternoon times are written without
-AM/PM, and we restore them from the capture schedule. The training period (Monday and Tuesday morning) contains
-only benign traffic and FTP-Patator, so every attack in the stream is new.
+AM/PM, and we restore them from the capture schedule. The fitted part of the training period (Monday and Tuesday
+until 10:59) contains only benign traffic and FTP-Patator. SSH-Patator first occurs in the reference set
+(Tuesday from 14:09), so it is never learned from the training data, and every attack in the stream is new.
 
 \textbf{CSE-CIC-IDS2018} covers ten days with a larger network and attack set. We use the ``Processed Traffic
 Data for ML'' CSVs, thinned to one row in eight per file before sampling to keep the replay tractable. Seven
@@ -49,7 +51,61 @@ Numeric features are transformed with $\operatorname{sign}(v)\log(1+|v|)$ to tam
 with training-period statistics. Categorical fields (UNSW-NB15's protocol, state and service) are one-hot encoded
 with an ``unseen'' bucket. Nothing is fitted on the stream.
 
+\textbf{Dataset audit.} \Cref{tab:audit} lists every class with its number of flows in the source CSVs, in the
+replay sample, in the fitted part of the training period and in the stream, together with the first stream window
+in which it occurs. The rules behind these numbers are as follows.
+\emph{Timestamps.} CIC-IDS2017 was captured between 09:00 and 17:00, but its afternoon times are written as
+1:00--5:59 without AM/PM; every time before 08:00 is moved forward by twelve hours. Its timestamps have
+one-minute resolution, and flows within the same minute keep their order in the files (a stable sort).
+CSE-CIC-IDS2018 times are parsed day-first as given, and UNSW-NB15 uses its epoch start time (\texttt{Stime}).
+\emph{Labels.} Surrounding white space is stripped and non-ASCII characters (the corrupted dash in the CIC-IDS2017
+web-attack names) become a hyphen. In UNSW-NB15 an empty attack category means normal traffic, and
+``Backdoors'' is merged into ``Backdoor''. No other classes are merged or renamed; CSE-CIC-IDS2018's spelling
+``Infilteration'' is kept.
+\emph{Skipped rows.} The CIC-IDS2017 CSVs contain 288{,}602 blank lines; with the sampling stride of seven,
+41{,}229 of them are read and skipped. No row of the other two datasets is skipped.
+\emph{Duplicates.} We keep duplicate rows, because removing them would change the class proportions over time.
+In the sample, 23{,}736 (5.9\%), 52{,}964 (13.2\%) and 55{,}746 (13.9\%) rows repeat the features of an
+earlier row, and 6{,}417 (2.3\%), 19{,}987 (7.1\%) and 122 (0.04\%) stream rows are identical to a training row.
+In a chronological replay such a row is a later recurrence of the same traffic, which a deployed detector would
+also see. Every method receives the same rows.
+
+The audit also explains several results. Heartbleed (11 flows) does not survive sampling. Infiltration and SQL
+injection in CIC-IDS2017 keep two and three flows. A class is trained only after five labelled flows
+(\cref{sec:regime}), so no method can collect enough correct labels to learn them. DDoS attacks-LOIC-HTTP of CSE-CIC-IDS2018 has 23
+flows in the fitted training data, so it is known from the start, although almost all of its flows arrive later.
+The four UNSW-NB15 classes that we hold out start in windows 12 and 13, early in the stream.
+
+\begin{table}[p]
+\centering
+\caption{Dataset audit. Source: rows with a valid label in the published CSVs (for CSE-CIC-IDS2018, in the files
+thinned to one row in eight). Sample: rows in the 400k replay sample. Training: rows in the fitted part of the
+training period (held-out UNSW-NB15 classes removed). First: ``train'' for a class in the training data,
+otherwise its first stream window (0--69). Stream: rows in the 70 stream windows. The remaining sample rows lie
+in the reference set or, for held-out classes, in the training period.}
+\label{tab:audit}
+\footnotesize
+\loadrows{\auditA}{audit_CIC17_paper.tex}{6}%
+\loadrows{\auditB}{audit_IDS18_paper.tex}{6}%
+\loadrows{\auditC}{audit_UNSW_paper.tex}{6}%
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Class & Source & Sample & Training & First & Stream \\
+\midrule
+\multicolumn{6}{@{}l}{\textit{CIC-IDS2017}} \\
+\auditA
+\midrule
+\multicolumn{6}{@{}l}{\textit{CSE-CIC-IDS2018}} \\
+\auditB
+\midrule
+\multicolumn{6}{@{}l}{\textit{UNSW-NB15}} \\
+\auditC
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{Label regime and classifier}
+\label{sec:regime}
 The main budget is $B = 10\%$ of each window (400 labels), and the low budget $B = 1\%$ (40 labels). The delay is
 $\delta = 1$ window, and \cref{sec:res-sens} varies it. Every method that uses labels receives exactly the same
 number; INSOMNIA uses none by design.
