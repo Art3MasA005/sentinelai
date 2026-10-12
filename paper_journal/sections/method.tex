@@ -1,0 +1,160 @@
+\section{\nova{}}
+\label{sec:method}
+
+\nova{} wraps any probabilistic classifier $f$; we use gradient-boosted trees. It maintains three pieces of
+state: a training memory $M$ of labelled flows, a calibration store $Q$ of held-out analyst labels that are never
+used for training, and the previously deployed model $f_{\text{prev}}$. \Cref{alg:nova} gives the loop that runs
+after every window. Each component addresses one of the four conditions of \cref{sec:intro}:
+\begin{itemize}
+  \item new classes: open-world scoring with per-class recalibration;
+  \item scarce labels: the query and label propagation;
+  \item late labels: the memory;
+  \item silent degradation: the deployment guard and rollback.
+\end{itemize}
+\Cref{tab:hyper} lists the hyper-parameters.
+
+\begin{algorithm}[t]
+\caption{\nova{} after window $W_w$ has been predicted}
+\label{alg:nova}
+\begin{algorithmic}[1]
+\Require deployed model $f$, previous model $f_{\text{prev}}$, memory $M$, calibration store $Q$
+\State $s \gets$ unknown scores of $W_w$ under $f$ \Comment{\cref{sec:unknown}}
+\State request labels for $\textsc{Query}(W_w, s, Bn)$; they arrive at window $w{+}\delta$ \Comment{\cref{sec:query}}
+\State $L \gets$ analyst labels that arrived now
+\If{$f$ was deployed within the last two windows \textbf{and} $\mathrm{F1}_L(f_{\text{prev}}) - \mathrm{F1}_L(f) > \rho$ \textbf{and} $\mathrm{F1}_{\text{ref}}(f) - \mathrm{F1}_{\text{ref}}(f_{\text{prev}}) \le \epsilon$}
+   \State roll back to $f_{\text{prev}}$ \Comment{\cref{sec:guard}}
+\EndIf
+\State $H \gets$ stratified hold-out of $L$ (share $h$); \ $T \gets L\setminus H$
+\State $P \gets \textsc{Propagate}(T)$ \Comment{\cref{sec:prop}}
+\State $f' \gets \textsc{Train}(M \cup T \cup P)$ with weight $\omega$ on $T \cup P$; calibrate on reference $\cup\; Q$
+\If{$\mathrm{F1}_H(f') \ge \mathrm{F1}_H(f)$ \textbf{and} $\mathrm{F1}_{\text{ref}}(f) - \mathrm{F1}_{\text{ref}}(f') \le \epsilon$}
+   \State deploy $f'$; $f_{\text{prev}} \gets f$
+\EndIf
+\State move flows of $H$ to $Q$ if their class has room and $\ge q_{\min}$ flows in $M$, otherwise to $M$
+\State $M \gets \textsc{CBRS}(M, T \cup P)$ \Comment{\cref{sec:memory}}
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Open-world scoring and recalibration}
+\label{sec:unknown}
+For a flow $x$ with predicted class $c = \arg\max_j p_j(x)$, \nova{} computes two scores, each normalised so that
+its decision threshold is 1:
+\begin{equation}
+s_{\text{msp}}(x) = \frac{1 - p_c(x)}{1 - \tau^{\text{msp}}_c}, \qquad
+s_{\text{knn}}(x) = \frac{d_k\!\left(x, \mathcal{B}_c\right)}{\tau^{\text{knn}}_c},
+\end{equation}
+where $p_c(x)$ is the maximum softmax probability and $d_k(x,\mathcal{B}_c)$ the Euclidean distance from $x$ to
+its $k$-th nearest neighbour in a bank $\mathcal{B}_c$ of up to 3{,}000 training flows of class $c$. The unknown
+score is $s(x) = \max\bigl(s_{\text{msp}}(x), s_{\text{knn}}(x)\bigr)$, and the decision is \unk{} if and only if
+$s(x) > 1$. The same score ranks flows for the unknown AUROC and drives the query.
+
+\textbf{Per-class thresholds.} A single global threshold is dominated by the majority class: it either rejects
+most flows of a newly learned, still sparse class, or accepts everything. \nova{} therefore calibrates one pair
+of thresholds per class on held-out flows that the classifier did not train on. $\tau^{\text{msp}}_c$ is the 2\%
+quantile of the confidence of held-out flows predicted as $c$; a class with fewer than 20 such flows receives the
+most lenient threshold of the other classes. $\tau^{\text{knn}}_c$ is the 99\% quantile of $d_k$ over held-out
+flows that belong to $c$ and are predicted as $c$; with fewer than 30 such flows, it falls back to a leave-one-out
+estimate on the bank itself.
+
+\textbf{Class-conditional neighbours.} The neighbour search is restricted to the bank of the \emph{predicted}
+class. Benign traffic consists of many protocol and application modes, which a single class centroid, as in
+CADE~\cite{yang2021cade}, cannot represent: the centroid lies between the modes, and every mode looks distant. A
+$k$-NN distance follows each mode. Conditioning on the predicted class also makes the score answer the operational
+question, ``is this flow typical of what the model says it is?''.
+
+\textbf{Recalibration.} Thresholds are recomputed for every candidate model on the reference set plus the
+calibration store $Q$. Without $Q$, a class that drifts after training keeps thresholds fitted on training-period
+traffic. Its later flows are then rejected even after the model has learned the class. This is the mechanism that
+pulls the replay baselines below the static model on UNSW-NB15 (\cref{sec:res-main}).
+
+\subsection{Query}
+\label{sec:query}
+Of the budget $Bn$ labels for a window, a share $\rho_u$ is drawn uniformly at random. This keeps an unbiased
+view of benign drift, which a purely novelty-driven query would ignore. The remaining labels are spread over $K$
+$k$-means clusters of the window's flows. Cluster $j$ receives at least one label and a quota proportional to
+\begin{equation}
+q_j \propto \sqrt{|j|}\,\bigl(0.1 + \bar{s}_j\bigr),
+\end{equation}
+where $|j|$ is the cluster size and $\bar{s}_j$ the mean unknown score of its flows, clipped to $[0,5]$. Inside a
+cluster, the flows with the highest unknown score are chosen first.
+
+The square root damps size: a large benign mode still receives labels, but not in proportion to its volume.
+The novelty term sends labels to compact clusters of unfamiliar flows, which is how an emerging attack looks in a
+window. The constant 0.1 keeps familiar clusters from receiving no labels at all.
+
+\subsection{Label propagation}
+\label{sec:prop}
+Each analyst label is extended to nearby unlabelled flows of the same window under two agreement conditions. An
+unlabelled flow $u$ takes class $c$ when
+\begin{enumerate}
+  \item its $\min(k_p, n_c)$ nearest labelled flows all have class $c$, where $n_c$ is the number of labels of
+        $c$ in the window, and
+  \item its distance to the nearest labelled flow is within the radius of $c$, the 90th percentile of
+        nearest-same-class distances among the labels of $c$.
+\end{enumerate}
+At most $r$ propagated labels are kept per analyst label of $c$, closest first, and a class with a single label
+does not spread. Unlike self-training~\cite{andresini2021insomnia,zhang2024aoc}, propagation never uses the model's
+own predictions and never creates a class; it follows the agreement principle of SOUL~\cite{amalapuram2024soul}.
+Hold-out flows are never propagated, so the guard is not evaluated on copies of its own training data.
+
+\subsection{Memory}
+\label{sec:memory}
+The training memory holds 20{,}000 flows and is a class-balancing reservoir~\cite{chrysakis2020online}. It is
+initialised by streaming the training period through the reservoir. When it is full, a new flow of a class that is not the largest evicts
+a random flow of the currently largest class, and a flow of the largest class replaces a random member of its
+own class with reservoir probability. ``Largest'' compares class size divided by a class weight. Benign traffic
+receives weight $\beta$, so it may occupy $\beta$ times the share of any attack class. Benign traffic is
+multi-modal, and starving it raises false alarms. The newest labels receive training weight $\omega$, so that a
+model update reflects what has just been observed.
+
+\subsection{Deployment guard and rollback}
+\label{sec:guard}
+Every candidate is trained on the memory plus the new labels, minus a stratified hold-out $H$ of the newest
+analyst labels: a share $h$ of each class with at least four labels. The candidate is deployed only if two
+conditions hold:
+\begin{enumerate}
+  \item it is at least as good as the deployed model on $H$;
+  \item it loses at most $\epsilon$ macro-F1 on the reference set.
+\end{enumerate}
+Both comparisons use the open-world credit of \cref{eq:owcredit}, so models that know different classes are
+compared on the same task. They ignore classes with fewer than $m$ labels in the compared slice: a class with one
+labelled flow makes macro-F1 jump by $1/|\mathcal{C}|$ on a single decision.
+
+After a deployment, the next two label batches are also used to check the new model against its predecessor. If
+the predecessor is better by more than $\rho$, \nova{} rolls back. A rollback is itself a deployment and must pass
+the same reference check. In our development runs, an unchecked rollback once restored an early model that did not
+know most of the attack classes learned since, and undid what the stream had taught.
+
+\subsection{Hyper-parameters and cost}
+\Cref{tab:hyper} lists all hyper-parameters. They were set from the design arguments above, checked in two
+development runs on CIC-IDS2017, and then frozen for every experiment on every dataset.
+
+Per window, \nova{} performs one $k$-NN scoring pass, one $k$-means run on 4{,}000 flows, and at most one candidate
+training on about 20{,}000 flows. The scoring pass uses chunked matrix products against banks of at most 3{,}000
+flows per class. Training dominates the cost: \nova{} spends 13--14 minutes of training per 70-window run, 1.2 to 2.2
+times as much as CBRS replay (\cref{sec:res-cost}).
+
+\begin{table}[t]
+\centering
+\caption{\nova{} hyper-parameters (frozen after development on CIC-IDS2017).}
+\label{tab:hyper}
+\small
+\begin{tabular}{@{}llp{0.55\textwidth}@{}}
+\toprule
+Symbol & Value & Role \\
+\midrule
+$k$ & 10 & neighbour rank of the $k$-NN score; bank of 3{,}000 flows per class \\
+-- & 2\%, 99\% & quantiles for $\tau^{\text{msp}}_c$ and $\tau^{\text{knn}}_c$ \\
+$\rho_u$ & 0.2 & uniformly sampled share of the label budget \\
+$K$ & 24 & $k$-means clusters for the query \\
+$k_p$, $r$ & 5, 5 & propagation agreement size; propagated labels per analyst label \\
+$\beta$ & 4 & benign weight in the class-balanced memory (capacity 20{,}000) \\
+$\omega$ & 2 & training weight of the newest labels \\
+$h$ & 25\% & hold-out share of new analyst labels for the guard \\
+$|Q_c|$, $q_{\min}$ & 200, 50 & calibration flows per class; memory flows required before a class feeds $Q$ \\
+$\epsilon$ & 0.05 & tolerated reference macro-F1 loss \\
+$\rho$ & 0.05 & rollback margin (two-window watch) \\
+$m$ & 5 & minimum labels per class in guard comparisons \\
+\bottomrule
+\end{tabular}
+\end{table}

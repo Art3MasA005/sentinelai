@@ -1,0 +1,56 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Implications for practice}
+\textbf{Stale thresholds are a silent failure.} The most consequential result is not the ranking of the methods
+but the UNSW-NB15 failure of the replay baselines (\cref{sec:res-main,sec:res-ablation}). These methods learn the
+right classes from the right labels, yet every later flow of those classes is rejected, because the rejection
+thresholds were fitted on older traffic. The failure is invisible in the classifier's training loss and in its
+detection recall, which stays at 1.0. Any open-world detector whose thresholds are calibrated once is exposed to
+it. The remedy is cheap: keep a small store of held-out analyst labels per class and recalibrate on it whenever
+the model changes.
+
+\textbf{False positives depend on calibration as much as on the model.} Most benign flows flagged by any method are
+\unk{} decisions, not attack labels. Their number is set largely by the rejection quantiles, which all methods
+share. A 2.8\% review rate is still large in absolute terms: at one million benign flows a day it means about
+28{,}000 reviews, an instance of the base-rate fallacy~\cite{arp2022dos}. \Cref{sec:res-sens} shows how the
+quantiles trade review load against recall. Operators should set them from their review capacity, not from a
+benchmark.
+
+\textbf{Validate every update.} The deployment guard is the component whose removal costs the most on the
+development dataset. A retraining loop that deploys every candidate learns more attack traffic, but it also
+deploys models that confuse classes. A hold-out check on the newest labels and a forgetting check on a fixed
+reference set are simple to add to any adaptation loop.
+
+\textbf{Read open-world scores with per-class results.} Open-world macro-F1 makes methods that learn different
+classes comparable, but it credits a class that is never learned and always rejected as fully correct
+(\cref{sec:metrics,sec:res-budget}). A method can therefore win by not learning. We recommend reporting
+per-class results and binary detection metrics alongside it, as we do.
+
+\subsection{Threats to validity}
+\textbf{Dataset errors.} CIC-IDS2017 and CSE-CIC-IDS2018 contain labelling and feature-extraction
+errors~\cite{engelen2021troubleshooting,lanvin2022errors,liu2022error}. Some port-scan flows are feature-identical to
+benign flows, and Brute Force and XSS are barely separable. These errors cap every method alike and probably explain
+part of the PortScan and web-attack results. Several CSE-CIC-IDS2018 day files are truncated in the published CSVs.
+Results on the corrected CIC-IDS2017 release are future work.
+
+\textbf{Short time spans.} The datasets cover two to ten days, so the streams mix attack onsets with modest benign
+drift; long-term drift of benign traffic is under-represented. UNSW-NB15 needs held-out classes to contain new
+attacks at all.
+
+\textbf{Re-implemented baselines.} The baselines are re-implemented in one multi-class framework with the same
+classifier and labelling cost, not run from the authors' code. INSOMNIA and the active-learning baselines were
+designed for binary detection or one-shot adaptation, and NetGuard's generative augmentation is not reproduced. Our
+results compare the strategies under our protocol; they do not reproduce the original papers' numbers.
+
+\textbf{Simulated analyst.} The oracle returns correct labels with a fixed delay. Real analysts make mistakes,
+answer at variable speed, and prefer some flows over others. Label noise would hurt label propagation and the
+guard in particular.
+
+\textbf{Design on one dataset.} All design decisions were made on CIC-IDS2017. We checked the class composition of
+the other two datasets once, with the static model, which determined the UNSW-NB15 hold-out. The held-out ablations
+and the low-budget runs were added after the main results; they are analyses, not design steps.
+
+\textbf{Statistics.} We use three seeds per configuration. The paired Wilcoxon tests treat windows as samples,
+but consecutive windows are correlated, so the $p$-values overstate certainty. The seed changes sampling and
+initialisation but not the data, so the reported deviations do not include data variability.

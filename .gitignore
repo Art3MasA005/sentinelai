@@ -17,3 +17,4 @@ app_flutter/build/
 .vscode/
 .idea/
 *.egg-info/
+paper_journal/main.pdf

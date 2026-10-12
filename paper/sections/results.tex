@@ -24,83 +24,47 @@ Method & OW-F1 & AUT & Det-F1 & FPR & U-AUROC & Forget.\\
 \subsection{Main comparison}
 \resulttable{CIC17_main_b010_paper.tex}{CIC-IDS2017, label budget 10\%, delay 1 window.}{tab:cic17}
 \resulttable{IDS18_main_b010_paper.tex}{CSE-CIC-IDS2018, label budget 10\%, delay 1 window.}{tab:ids18}
-\resulttable{UNSW_main_b010_paper.tex}{UNSW-NB15 (DoS, Reconnaissance, Shellcode, Worms held out of training), label budget 10\%.}{tab:unsw}
+\resulttable{UNSW_main_b010_paper.tex}{UNSW-NB15 (four classes held out of training), label budget 10\%.}{tab:unsw}
 
-\textbf{CIC-IDS2017} (\cref{tab:cic17}, \cref{fig:time}). \nova{} has the highest OW-F1 (0.768) and AUT
-(0.858). The closest baseline is CBRS replay (0.756 and 0.838; paired Wilcoxon $p < 0.001$); every other method is
-at least 12 points lower. CBRS detects slightly more attacks (detection F1 0.861 against 0.854, unknown AUROC 0.874
-against 0.872), but it does so at a false-positive rate of 4.5\% against 2.8\%: \nova{} sends 38\% fewer benign
-flows to the analyst. The static model, which never sees a label, ends at 0.311 because every attack class in the
-stream is new to it.
+\textbf{CIC-IDS2017} (\cref{tab:cic17}). \nova{} has the highest OW-F1 (0.768) and AUT (0.858). The closest
+baseline, CBRS replay (0.756, 0.838; Wilcoxon $p < 0.001$), detects slightly more attacks (detection F1 0.861
+against 0.854) but at a 4.5\% false-positive rate against 2.8\%: \nova{} sends 38\% fewer benign flows to the
+analyst. All other methods are at least 12 points lower.
 
-\textbf{CSE-CIC-IDS2018} (\cref{tab:ids18}). \nova{} and CBRS replay tie on OW-F1 (0.722) and AUT (0.869).
-\nova{} is better in 51 of the 70 windows ($p = 0.003$), but CBRS is ahead by three points on average over the
-last 24 windows, and \nova{} varies more across seeds (0.655 to 0.793). On the other metrics \nova{} is ahead:
-detection F1 0.815 against 0.788, false-positive rate 3.1\% against 4.8\%, and maximum forgetting 0.007 against
-0.034.
+\textbf{CSE-CIC-IDS2018} (\cref{tab:ids18}). \nova{} and CBRS replay tie on OW-F1 (0.722) and AUT (0.869);
+\nova{} wins 51 of 70 windows ($p = 0.003$) but trails over the last 24. It has the higher detection F1 (0.815
+against 0.788), a 3.1\% against 4.8\% false-positive rate, and five times less forgetting (0.007 against 0.034).
 
-\textbf{UNSW-NB15} (\cref{tab:unsw}, \cref{fig:time-unsw}). Here most adaptive methods end \emph{below} the
-static model (0.499): CBRS replay reaches 0.327, continual replay 0.357 and uncertainty sampling 0.243. The
-per-flow predictions show why. These methods learn Exploits and Fuzzers, but every flow of these classes is
-then rejected as \unk{}, because the open-world thresholds were calibrated on the January reference set and the
-February traffic of the same classes lies outside them. Classes that the model has learned are no longer
-credited for \unk{}, so the rejections count as errors. \nova{} recalibrates each learned class on recent
-labelled flows that it did not train on (the calibration store) and reaches 0.509 OW-F1 and 0.595 AUT, ahead of
-the static model ($p = 0.03$) and guarded selective retraining (0.493, $p = 0.007$). We confirmed this
-mechanism with one additional run set after the main results, leaving the method unchanged. Without the
-calibration store, \nova{} also scores 0 on Exploits and Fuzzers, and it falls to 0.418 OW-F1 and 0.418 AUT
-(false-positive rate 9.1\%). This component cost only 1.9 points in the CIC-IDS2017 ablation, where the training
-and stream traffic of each learned class are closer. It also has the highest
-detection F1 (0.860) and the lowest false-positive rate (6.6\% against 7.6--19.0\%). Every method flags all
-UNSW-NB15 attack flows (detection recall 1.0), so on this dataset the methods differ in false positives and in
-naming the attack class, not in missed attacks.
+\textbf{UNSW-NB15} (\cref{tab:unsw}, \cref{fig:time-unsw}). Most adaptive methods end \emph{below} the static
+model (0.499); CBRS replay reaches 0.327. They learn Exploits and Fuzzers, but every later flow of these classes is
+rejected as \unk{}: the thresholds were calibrated on January traffic, and February flows of the same classes lie
+outside them. \nova{} recalibrates learned classes on its calibration store and reaches 0.509 OW-F1 and 0.595
+AUT, ahead of the static model ($p = 0.03$), with the highest detection F1 (0.860) and lowest false-positive rate
+(6.6\% against 7.6--19.0\%). Removing the calibration store (a check run after the main results, method
+unchanged) drops \nova{} to 0.418 and zero F1 on Exploits and Fuzzers, confirming the mechanism.
 
-\textbf{Self-training.} INSOMNIA, which labels half of each window with its own nearest-centroid estimator, has
-the highest false-positive rate on both CIC datasets (12.4\% and 25.7\%) and the largest forgetting on
-CSE-CIC-IDS2018 (0.142): pseudo-label errors on unseen classes are fed back into training.
+INSOMNIA's self-training has the highest false-positive rate on both CIC datasets (12.4\%, 25.7\%):
+pseudo-label errors on unseen classes are fed back into training.
 
 \begin{figure}[t]
 \centering
 \IfFileExists{\results{fig_ow_f1_over_time_UNSW.pdf}}{\includegraphics[width=\columnwidth]{fig_ow_f1_over_time_UNSW.pdf}}{\TBD{figure}}
-\caption{Open-world macro-F1 per window on UNSW-NB15 (mean of three seeds, 5-window moving average). The grey
-curves (replay-based baselines) fall below the static model after the January--February boundary.}
+\caption{OW macro-F1 per window on UNSW-NB15 (mean of three seeds, 5-window moving average). Replay-based
+baselines (grey) fall below the static model.}
 \label{fig:time-unsw}
 \end{figure}
 
-\begin{figure*}[t]
-\centering
-\IfFileExists{\results{fig_ow_f1_over_time_CIC17.pdf}}{\includegraphics[width=0.85\textwidth]{fig_ow_f1_over_time_CIC17.pdf}}{\TBD{figure}}
-\caption{Open-world macro-F1 per window on CIC-IDS2017 (mean of three seeds, 5-window moving average). \nova{},
-the two strongest baselines and the static model in colour, the remaining baselines in grey.}
-\label{fig:time}
-\end{figure*}
-
 \subsection{Label budget}
-\Cref{tab:budget} repeats the comparison with 1\% of each window labelled (40 flows per window). The
-configuration is unchanged. The methods that need no labels are omitted, since their results do not depend on
-the budget.
-
-On CIC-IDS2017 the lead of \nova{} grows from 1.2 to 9.0 OW-F1 points (0.651 against 0.561 for CBRS replay) and
-from 2.0 to 6.5 AUT points (0.820 against 0.755). \nova{} loses 0.117 OW-F1 when the budget shrinks tenfold, CBRS
-replay 0.195. Unknown-attack AUROC stays at 0.855 for \nova{} but falls to 0.775 for CBRS replay. On
-CSE-CIC-IDS2018, where the two methods tie at 10\%, \nova{} leads at 1\% (0.570 against 0.536, AUT 0.830 against
-0.811, $p = 0.002$).
-
-On UNSW-NB15 \nova{} is behind at 1\%: 0.469 against 0.504 for periodic retraining, and 0.48 for continual replay
-and guarded selective retraining. The per-class results show that this lead comes from \emph{not} learning.
-With 40 labels per window, periodic retraining never collects the five labels per class it needs to learn the
-four held-out classes (in all three seeds its last model still leaves out DoS and Reconnaissance as too rare, and
-has no Shellcode or Worms labels). It keeps rejecting them as \unk{}, which the metric credits in full (per-class F1 0.99 to
-1.00), while it scores 0 on Exploits and Fuzzers, like the static model. \nova{} spends its labels on novel flows,
-so it does learn DoS and Reconnaissance. In UNSW-NB15, however, these overlap heavily with Exploits, and in the first
-seed 38\% of the DoS flows scored after DoS was learned are labelled Exploits. A class that is learned but confused scores lower than a
-class that stays \unk{}. At the same time, \nova{} halves the false-positive rate (9.7\% against 15.7--18.7\%)
-and has the highest detection F1 (0.807 against at most 0.721).
+With 1\% of each window labelled (\cref{tab:budget}), \nova{} leads by 9.0 points on CIC-IDS2017 and by 3.4
+points on CSE-CIC-IDS2018 ($p = 0.002$), where the two methods tied at 10\%. On UNSW-NB15 it trails periodic
+retraining (0.469 against 0.504). With 40 labels per window, periodic retraining never collects enough labels of
+the held-out classes to learn them, so it keeps rejecting them as \unk{}, which the metric credits in full, while
+scoring 0 on Exploits and Fuzzers. \nova{} learns DoS and Reconnaissance, which overlap with Exploits in
+UNSW-NB15, and loses that credit. It still halves the false-positive rate (9.7\% against $\geq$15.7\%).
 
 \begin{table}[t]
 \centering
-\caption{Label budget 1\%: open-world macro-F1 and false-positive rate (\%), mean over three seeds; best per
-column in bold.}
+\caption{Label budget 1\%: OW macro-F1 and FPR (\%), mean over three seeds; best per column in bold.}
 \label{tab:budget}
 \footnotesize
 \setlength{\tabcolsep}{3pt}
@@ -114,33 +78,19 @@ column in bold.}
 \end{tabular}}}{\TBD{budget table not generated yet}}
 \end{table}
 
-\subsection{Ablation}
+\subsection{Ablation and detector}
 \resulttable{CIC17_ablation_b010_paper.tex}{Ablation on CIC-IDS2017 (budget 10\%): \nova{} with one component removed.}{tab:ablation}
 
-Removing any one component lowers OW-F1 (\cref{tab:ablation}). The guard matters most: without it OW-F1
-drops by 5.6 points to 0.712, although detection F1 (0.873) and unknown AUROC (0.924) rise. Without the hold-out
-check, more updates are deployed. They flag more attack flows (detection recall 0.836 against 0.799) but name the
-right class less often (open-world attack macro-recall 0.640 against 0.685), and binary detection does not
-penalise naming the wrong class. The novelty-weighted query is next (0.726, $-4.2$). It mainly
-improves unknown detection (unknown AUROC 0.826 without it). Recency weighting ($-2.3$), the calibration store
-($-1.9$; unknown AUROC 0.830) and the class-balanced memory ($-1.9$) follow. Label propagation changes OW-F1 least
-($-1.2$) but keeps the false-positive rate down (3.6\% without it, 2.8\% with it).
+Every component raises OW-F1 (\cref{tab:ablation}; full \nova{} 0.768). The guard matters most ($-5.6$):
+without it more updates are deployed, which flag more attacks (detection recall 0.836 against 0.799) but name the
+right class less often. The query is next ($-4.2$; unknown AUROC 0.826 without it), followed by recency
+weighting, the calibration store and the balanced memory ($-1.9$ to $-2.3$). Propagation adds least to OW-F1
+($-1.2$) but lowers the false-positive rate (3.6\% without it). Replacing the class-conditional $k$-NN detector by
+distance to the nearest class centroid lowers OW-F1 from 0.768 to 0.712 for \nova{} and from 0.311 to 0.178 for
+the static model, which then labels almost every attack benign: one centroid cannot follow multi-modal benign
+traffic.
 
-\subsection{Open-world detector}
-Replacing the class-conditional $k$-NN detector by the distance to the nearest class centroid lowers OW-F1 from 0.311 to 0.178 for the static model and from 0.768 to 0.712 for \nova{}. Unknown
-AUROC drops from 0.605 to 0.520 and from 0.872 to 0.840. A single centroid cannot follow multi-modal classes:
-benign traffic in particular consists of many protocol and application modes. With the centroid detector, the
-static model labels almost every attack as benign (detection F1 0.012). The $k$-NN detector is therefore useful
-even without adaptation, and every method in \cref{tab:cic17,tab:ids18,tab:unsw} uses it.
-
-\subsection{Neural classifier}
-With a two-layer MLP in place of gradient boosting (\cref{tab:mlp}), \nova{} keeps the lowest false-positive rate
-(3.3\% against 4.7\% for CBRS replay) and the highest detection F1 (0.865 against 0.824), and both methods have the
-same AUT (0.831 against 0.833). \nova{} is better in 49 of 70 windows. Its stream-level OW-F1, however, is clearly
-lower (0.622 against 0.711). Per-class F1 shows why: the two methods differ mostly on short-lived web
-attacks: XSS (0.09 against 0.68 per-class F1) and Brute Force (0.28 against 0.47) each appear in only a few
-windows, so they move the per-window curve little but carry a full class weight in macro-F1. In our
-implementation, recency weighting is not applied to the MLP, which takes no sample weights. We therefore do not
-claim that \nova{}'s accuracy advantage carries over to neural classifiers; its lower false-positive rate does.
-
-\resulttable{CIC17_model-mlp_b010_paper.tex}{CIC-IDS2017 with an MLP classifier (budget 10\%).}{tab:mlp}
+\textbf{Neural classifier.} With an MLP instead of gradient boosting on CIC-IDS2017, \nova{} keeps the lowest
+false-positive rate (3.3\% against 4.7\%), the higher detection F1 and an equal AUT, but its OW-F1 is lower than
+CBRS replay's (0.622 against 0.711), mainly on two short-lived web attacks. We do not claim that its accuracy
+advantage carries over to neural classifiers.

@@ -1,7 +1,7 @@
-% NOVA paper — IEEE conference format.
+% NOVA paper, conference version (IEEE conference format, A4, 6 pages including references, double-blind).
 % Build:  latexmk -pdf main.tex      (MiKTeX / TeX Live; also works on Overleaf after uploading ../experiments/paper)
 % Tables and figures come from experiments/analysis/paper_results.py; re-run it after new experiments.
-\documentclass[conference]{IEEEtran}
+\documentclass[conference,a4paper]{IEEEtran}
 \IEEEoverridecommandlockouts
 
 \usepackage[utf8]{inputenc}
@@ -19,7 +19,6 @@
 
 \graphicspath{{../experiments/paper/}}
 \newcommand{\results}[1]{../experiments/paper/#1}
-% Placeholder for numbers that are filled in once all runs finish. Remove before submission.
 \newcommand{\TBD}[1]{\textcolor{red}{[#1]}}
 \newcommand{\nova}{\textsc{Nova}}
 \newcommand{\unk}{\textsc{unknown}}
@@ -29,8 +28,8 @@
 \title{\nova: Novelty-aware, Open-world, Validated Adaptation for Network Intrusion Detection under Delayed and Scarce Labels}
 
 \author{
-\IEEEauthorblockN{\TBD{Author Name}}
-\IEEEauthorblockA{\TBD{Affiliation}\\ \TBD{email}}
+\IEEEauthorblockN{Anonymous Author(s)}
+\IEEEauthorblockA{Affiliation withheld for double-blind review}
 }
 
 \maketitle
@@ -44,6 +43,10 @@
 \input{sections/results}
 \input{sections/discussion}
 \input{sections/conclusion}
+
+\section*{Acknowledgment}
+The authors used an AI assistant (Claude, Anthropic) to help implement the experimental software, run the
+analyses, and draft and edit the text. The authors reviewed all content and take full responsibility for it.
 
 \bibliographystyle{IEEEtran}
 \bibliography{refs}

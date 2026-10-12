@@ -1,0 +1,358 @@
+\section{Results}
+\label{sec:results}
+
+\subsection{RQ1: random versus chronological evaluation}
+\label{sec:res-split}
+\Cref{tab:split} trains the same classifier on 30\% of each dataset, either a stratified random 30\% or the first
+30\% in time, and scores it closed-world on the rest, as the papers that report near-perfect results do.
+
+On a random split, the classifier reproduces the familiar numbers: 99.8\% accuracy on CIC-IDS2017 and 98.5\% on
+CSE-CIC-IDS2018. Chronologically, accuracy falls to 72.6\% and 85.0\%, and macro-F1 collapses from 0.761 to 0.125
+and from 0.692 to 0.071, because eleven and seven of the test-period classes never occur in training. Accuracy
+hides most of the collapse, because the majority of flows are benign and benign traffic is still recognised.
+Even on the random split, macro-F1 is far below accuracy: rare classes such as SQL injection or infiltration, with a
+handful of flows, are not learned, and accuracy does not show it.
+
+UNSW-NB15 behaves differently. Every class occurs on its first capture day, so the chronological split creates no
+new classes, and accuracy changes little (97.8\% to 96.4\%). Its low macro-F1 under both splits reflects the
+known overlap of several of its attack categories; DoS and Exploits, for example, are hard to separate even when
+both are in training. This is why we hold four classes out of its training period in the remaining experiments.
+
+\begin{table}[t]
+\centering
+\caption{The same classifier on a random and a chronological 30/70 split (closed-world scoring, no \unk{}).
+Random split: mean of three seeds (standard deviation $\le 0.018$).}
+\label{tab:split}
+\small
+\IfFileExists{\results{split_check_paper.tex}}{%
+\CatchFileDef{\splitrows}{\results{split_check_paper.tex}}{}%
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+ & \multicolumn{2}{c}{Random split} & \multicolumn{2}{c}{Chronological split} & Test classes \\
+Dataset & Accuracy & Macro-F1 & Accuracy & Macro-F1 & unseen in training \\
+\midrule
+\splitrows
+\bottomrule
+\end{tabular}}{\TBD{split table not generated yet}}
+\end{table}
+
+The answer to RQ1 is that random-split accuracy says little about a deployed detector. In the remaining
+experiments every method is evaluated chronologically and open-world, and a method that cannot name a new attack
+can at least reject it as \unk{}.
+
+\subsection{RQ2: main comparison}
+\label{sec:res-main}
+\resulttable[p]{CIC17_main_b010_paper.tex}{CIC-IDS2017 (development dataset), label budget 10\%, delay 1 window.}{tab:cic17}
+\resulttable[p]{IDS18_main_b010_paper.tex}{CSE-CIC-IDS2018 (held out), label budget 10\%, delay 1 window.}{tab:ids18}
+\resulttable[p]{UNSW_main_b010_paper.tex}{UNSW-NB15 (held out; DoS, Reconnaissance, Shellcode and Worms removed from training), label budget 10\%, delay 1 window.}{tab:unsw}
+
+\begin{figure}[p]
+\centering
+\IfFileExists{\results{fig_ow_f1_over_time_CIC17.pdf}}{\includegraphics[width=0.78\textwidth]{fig_ow_f1_over_time_CIC17.pdf}}{\TBD{figure}}\\[2pt]
+{\small (a) CIC-IDS2017}\\[6pt]
+\IfFileExists{\results{fig_ow_f1_over_time_IDS18.pdf}}{\includegraphics[width=0.78\textwidth]{fig_ow_f1_over_time_IDS18.pdf}}{\TBD{figure}}\\[2pt]
+{\small (b) CSE-CIC-IDS2018}\\[6pt]
+\IfFileExists{\results{fig_ow_f1_over_time_UNSW.pdf}}{\includegraphics[width=0.78\textwidth]{fig_ow_f1_over_time_UNSW.pdf}}{\TBD{figure}}\\[2pt]
+{\small (c) UNSW-NB15}
+\caption{Open-world macro-F1 per window (mean of three seeds, 5-window moving average). \nova{}, the strongest
+baselines and the static model are in colour; the remaining baselines are grey.}
+\label{fig:time}
+\end{figure}
+
+\textbf{CIC-IDS2017} (\cref{tab:cic17}, \cref{fig:time}a). \nova{} has the highest OW-F1 (0.768) and AUT (0.858).
+The closest baseline is CBRS replay (0.756 and 0.838; paired Wilcoxon $p < 0.001$); every other method is at least
+12 points lower. CBRS detects slightly more attacks (detection F1 0.861 against 0.854, unknown AUROC 0.874 against
+0.872), but at a false-positive rate of 4.5\% against 2.8\%: \nova{} sends 38\% fewer benign flows to the analyst.
+The static model, which never sees a label, ends at 0.311 because every attack class in the stream is new to it.
+\Cref{fig:time}a shows the shape of the stream: each attack day opens with a dip, while the new class is unknown
+and partly missed, and the adaptive methods recover once labels arrive; \nova{} is on or near the top after most dips.
+
+\textbf{CSE-CIC-IDS2018} (\cref{tab:ids18}, \cref{fig:time}b). \nova{} and CBRS replay tie on OW-F1 (0.722) and AUT
+(0.869). \nova{} is better in 51 of the 70 windows ($p = 0.003$), but CBRS is ahead by three points on average
+over the last 24 windows, and \nova{} varies more across seeds (0.655 to 0.793). On the other metrics \nova{} is
+ahead: detection F1 0.815 against 0.788, false-positive rate 3.1\% against 4.8\%, and maximum forgetting 0.007
+against 0.034. Guarded selective retraining has the lowest false-positive rate on this dataset (2.7\%), but it
+detects far fewer attacks (detection F1 0.605).
+
+\textbf{UNSW-NB15} (\cref{tab:unsw}, \cref{fig:time}c). Here most adaptive methods end \emph{below} the static
+model (0.499): CBRS replay reaches 0.327, continual replay 0.357 and uncertainty sampling 0.243. The per-flow
+predictions show why. These methods learn Exploits and Fuzzers, but every flow of these classes is then rejected
+as \unk{} (\cref{sec:res-perclass}). The open-world thresholds were calibrated on the January reference set, and
+the February traffic of the same classes lies outside them. Classes that the model has learned are no longer
+credited for \unk{}, so the rejections count as errors.
+
+\nova{} recalibrates each learned class on recent labelled flows that it did not train on (the calibration store)
+and reaches 0.509 OW-F1 and 0.595 AUT. This is ahead of the static model ($p = 0.03$) and of guarded selective
+retraining (0.493, $p = 0.007$). It also has the highest detection F1 (0.860) and the lowest false-positive rate
+(6.6\% against 7.6--19.0\%). Every method flags all UNSW-NB15 attack flows (detection recall 1.0), so on this
+dataset the methods differ in false positives and in naming the attack class, not in missed attacks.
+
+\textbf{Self-training.} INSOMNIA, which labels half of each window with its own nearest-centroid estimator, has
+the highest false-positive rate on both CIC datasets (12.4\% and 25.7\%) and the largest forgetting on
+CSE-CIC-IDS2018 (0.142). Its estimator can only assign classes that existed at training time, so flows of new
+attacks are fed back into training under wrong labels.
+
+\textbf{Answer to RQ2.} At a 10\% budget, \nova{} is the best method on two datasets and tied-best on the third.
+Its false-positive rate is lower than that of the strongest baseline on every dataset. The largest gap,
+on UNSW-NB15, comes from recalibration; \cref{sec:res-ablation} confirms this.
+
+\subsection{RQ3: ten times fewer labels}
+\label{sec:res-budget}
+\Cref{tab:budget} repeats the comparison with 1\% of each window labelled (40 flows per window) and an unchanged
+configuration. The two label-free methods are omitted, because their results do not depend on the budget.
+
+\begin{table}[t]
+\centering
+\caption{Label budget 1\%: OW macro-F1 and false-positive rate (\%), mean over three seeds; best per column in
+bold.}
+\label{tab:budget}
+\small
+\setlength{\tabcolsep}{4pt}
+\IfFileExists{\results{budget_b001_paper.tex}}{%
+\CatchFileDef{\budgetrows}{\results{budget_b001_paper.tex}}{}%
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+\budgetrows
+\bottomrule
+\end{tabular}}{\TBD{budget table not generated yet}}
+\end{table}
+
+On CIC-IDS2017 the lead of \nova{} grows from 1.2 to 9.0 OW-F1 points (0.651 against 0.561 for CBRS replay) and
+from 2.0 to 6.5 AUT points (0.820 against 0.755). \nova{} loses 0.117 OW-F1 when the budget shrinks tenfold, CBRS
+replay 0.195. Unknown AUROC stays at 0.855 for \nova{} but falls to 0.775 for CBRS replay. On CSE-CIC-IDS2018,
+where the two methods tie at 10\%, \nova{} leads at 1\% (0.570 against 0.536; AUT 0.830 against 0.811; $p = 0.002$).
+
+On UNSW-NB15, \nova{} is behind at 1\%: 0.469 against 0.504 for periodic retraining, and 0.48 for continual replay
+and guarded selective retraining. The per-class results show that this lead comes from \emph{not} learning. With
+40 labels per window, periodic retraining never collects the five labels per class it needs to learn the four
+held-out classes. In all three seeds its last model still leaves out DoS and Reconnaissance as too rare, and it has
+no Shellcode or Worms labels. It keeps rejecting these classes as \unk{}, which the metric credits in full
+(per-class F1 0.99 to 1.00), while it scores 0 on Exploits and Fuzzers, like the static model.
+
+\nova{} spends its labels on novel flows, so it does learn DoS and Reconnaissance. In UNSW-NB15, however, these
+overlap heavily with Exploits; in the first seed, 38\% of the DoS flows scored after DoS was learned are labelled
+Exploits. A class that is learned but confused scores lower than a class that stays \unk{}. At the same time,
+\nova{} halves the false-positive rate (9.7\% against 15.7--18.7\%) and has the highest detection F1 (0.807 against
+at most 0.721).
+
+\textbf{Answer to RQ3.} When labels are scarce, \nova{}'s lead grows on both CIC datasets; the ablation of
+\cref{sec:res-ablation} suggests that the query, which mainly improves unknown detection, contributes to this,
+although we did not repeat the ablation at 1\%. The UNSW-NB15 result is a limit of open-world scoring, not of the query: open-world macro-F1 rewards
+leaving an inseparable class unknown over learning it. Operators who prefer the second outcome should read
+OW-F1 together with per-class results.
+
+\subsection{RQ4: which components matter}
+\label{sec:res-ablation}
+\Cref{tab:ablation} removes one component at a time on all three datasets. The CIC-IDS2017 ablation was part of
+the development. The two held-out ablations were run after the main results, with the method unchanged.
+
+\begin{table}[t]
+\centering
+\caption{Ablation: OW macro-F1 (change against full \nova{} in points) and false-positive rate (\%) with one
+component removed; budget 10\%, mean over three seeds.}
+\label{tab:ablation}
+\small
+\setlength{\tabcolsep}{4pt}
+\IfFileExists{\results{ablation_all_paper.tex}}{%
+\CatchFileDef{\ablrows}{\results{ablation_all_paper.tex}}{}%
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+ & \multicolumn{2}{c}{CIC-IDS2017} & \multicolumn{2}{c}{CSE-CIC-IDS2018} & \multicolumn{2}{c}{UNSW-NB15} \\
+Variant & OW-F1 & FPR & OW-F1 & FPR & OW-F1 & FPR \\
+\midrule
+\ablrows
+\bottomrule
+\end{tabular}}}{\TBD{ablation table not generated yet}}
+\end{table}
+
+On CIC-IDS2017 every component raises OW-F1. The guard matters most: without it OW-F1 drops by 5.6 points to 0.712,
+although detection F1 (0.873) and unknown AUROC (0.924) rise. Without the hold-out check, more updates are
+deployed. They flag more attack flows (detection recall 0.836 against 0.799) but name the right class less often
+(open-world attack macro-recall 0.640 against 0.685), and binary detection does not penalise naming the wrong
+class. The novelty-weighted query is next ($-4.2$); it mainly improves unknown detection (unknown AUROC 0.826
+without it). Recency weighting ($-2.3$), the calibration store ($-1.9$) and the class-balanced memory ($-1.9$)
+follow. Label propagation changes OW-F1 least ($-1.2$) but keeps the false-positive rate down (3.6\% without it).
+
+\TBD{Held-out ablations: which components transfer to CSE-CIC-IDS2018 and UNSW-NB15 (runs in progress). On
+UNSW-NB15, removing the calibration store costs 9.1 points (0.418) and reproduces the baselines' failure: zero F1
+on Exploits and Fuzzers.}
+
+\textbf{Open-world detector.} Replacing the class-conditional $k$-NN detector by the distance to the nearest class
+centroid lowers OW-F1 on CIC-IDS2017 from 0.311 to 0.178 for the static model and from 0.768 to 0.712 for \nova{}.
+Unknown AUROC drops from 0.605 to 0.520 and from 0.872 to 0.840. With the centroid detector, the static model
+labels almost every attack as benign (detection F1 0.012). A plausible explanation is that benign traffic
+consists of many modes: its centroid lies between them, its distance scale becomes large, and attack flows fall
+inside it. The $k$-NN
+detector is therefore useful even without adaptation, and every method in \cref{tab:cic17,tab:ids18,tab:unsw} uses
+it.
+
+\subsection{RQ5: sensitivity to delay, thresholds and classifier}
+\label{sec:res-sens}
+\textbf{Label delay.} \Cref{tab:delay} varies the delay on CIC-IDS2017 for \nova{} and CBRS replay. \TBD{Text
+after the delay runs.}
+
+\begin{table}[t]
+\centering
+\caption{Label delay on CIC-IDS2017 (budget 10\%): OW-F1, AUT and FPR (\%), mean over three seeds.}
+\label{tab:delay}
+\small
+\IfFileExists{\results{delay_paper.tex}}{%
+\CatchFileDef{\delayrows}{\results{delay_paper.tex}}{}%
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lccccccccc@{}}
+\toprule
+ & \multicolumn{3}{c}{Delay 0} & \multicolumn{3}{c}{Delay 1 (main)} & \multicolumn{3}{c}{Delay 3} \\
+Method & OW-F1 & AUT & FPR & OW-F1 & AUT & FPR & OW-F1 & AUT & FPR \\
+\midrule
+\delayrows
+\bottomrule
+\end{tabular}}}{\TBD{delay table not generated yet}}
+\end{table}
+
+\textbf{Rejection thresholds.} The quantiles of \cref{sec:unknown} set how many flows are sent to the analyst.
+\Cref{tab:review} shows a stricter setting (1\% and 99.5\%) and a more lenient one (5\% and 97\%) besides the
+default (2\% and 99\%). \TBD{Text after the review-rate runs.}
+
+\begin{table}[t]
+\centering
+\caption{Rejection thresholds on CIC-IDS2017 (budget 10\%): stricter = MSP 1\%, $k$-NN 99.5\%; default = 2\%,
+99\%; more lenient = 5\%, 97\%. Mean over three seeds; FPR in \%.}
+\label{tab:review}
+\small
+\IfFileExists{\results{review_paper.tex}}{%
+\CatchFileDef{\reviewrows}{\results{review_paper.tex}}{}%
+\begin{tabular}{@{}llcccc@{}}
+\toprule
+Method & Thresholds & OW-F1 & Detection recall & FPR & U-AUROC \\
+\midrule
+\reviewrows
+\bottomrule
+\end{tabular}}{\TBD{review table not generated yet}}
+\end{table}
+
+\textbf{Neural classifier.} \Cref{tab:mlp} replaces gradient boosting by a two-layer MLP (128 and 64 units, 25
+epochs) for the three most informative methods. \nova{} keeps the lowest false-positive rate (3.3\% against 4.7\%
+for CBRS replay) and the highest detection F1 (0.865 against 0.824), both methods have the same AUT (0.831 against
+0.833), and \nova{} is better in 49 of 70 windows. Its stream-level OW-F1, however, is clearly lower (0.622 against
+0.711). Per-class F1 shows why: the two methods differ mostly on short-lived web attacks, XSS (0.09 against 0.68)
+and Brute Force (0.28 against 0.47). Each appears in only a few windows, so they move the per-window curve little but
+carry a full class weight in macro-F1. In our implementation, recency weighting is not applied to the MLP, which
+takes no sample weights. We therefore do not claim that \nova{}'s accuracy advantage carries over to neural
+classifiers; its lower false-positive rate does. Interestingly, the static MLP has a much higher unknown AUROC
+than the static gradient-boosting model (0.915 against 0.605), which suggests that the open-world score depends on
+the representation; we return to this in \cref{sec:res-meta}.
+
+\resulttable[t]{CIC17_model-mlp_b010_paper.tex}{CIC-IDS2017 with an MLP classifier (budget 10\%).}{tab:mlp}
+
+\subsection{Per-class results and failure modes}
+\label{sec:res-perclass}
+\Cref{tab:perclass-cic,tab:perclass-ids,tab:perclass-unsw} list per-class open-world F1 for \nova{}, the
+strongest baseline, guarded selective retraining and the static model.
+
+\newcommand{\perclasstable}[3]{%
+\begin{table}[t]
+\centering
+\caption{#2: per-class open-world F1 (budget 10\%, mean over three seeds). ``New'': unknown to the initial
+model. Best per row in bold.}
+\label{#3}
+\small
+\IfFileExists{\results{#1}}{%
+\CatchFileDef{\pcrows}{\results{#1}}{}%
+\begin{tabular}{@{}lrccccc@{}}
+\toprule
+Class & Stream flows & New & \nova{} & CBRS replay & Guarded sel. & Static \\
+\midrule
+\pcrows
+\bottomrule
+\end{tabular}}{\TBD{per-class table not generated yet}}
+\end{table}}
+\perclasstable{perclass_CIC17_paper.tex}{CIC-IDS2017}{tab:perclass-cic}
+\perclasstable{perclass_IDS18_paper.tex}{CSE-CIC-IDS2018}{tab:perclass-ids}
+\perclasstable{perclass_UNSW_paper.tex}{UNSW-NB15}{tab:perclass-unsw}
+
+On CIC-IDS2017, \nova{} reaches 0.88--1.00 on nine of the thirteen classes. Four classes cap every method:
+PortScan, DoS slowloris, SSH-Patator and Bot. They fail for different reasons. SSH-Patator occurs only in the first
+window of the stream and DoS slowloris in two early windows. No adaptive method can learn them under a one-window
+delay, so their F1 depends only on whether the initial model rejects them. Most of their flows are predicted
+benign. In the first seed, the $k$-NN distance separates slowloris flows from benign ones well (AUROC 0.97 among
+flows predicted benign), but at the benign threshold only about a fifth are rejected. After being learned,
+PortScan is still confused with benign traffic in about a third of its flows (first seed), consistent with the feature-identical port-scan and
+benign flows reported for this dataset~\cite{engelen2021troubleshooting}. Bot is the only class where \nova{} is
+clearly better than every baseline (0.24 against 0.01); the others never learn it.
+
+On UNSW-NB15 (\cref{tab:perclass-unsw}), CBRS replay scores 0 on Exploits, Fuzzers, Analysis and Backdoor
+and 0.54 on Generic, whereas \nova{} reaches 0.64, 0.55, 0.09, 0.06 and 0.97. This is the recalibration effect of
+\cref{sec:res-main} at the class level. Conversely, the static model and guarded selective retraining score 1.00 on
+the held-out DoS, Reconnaissance and Shellcode, because they keep rejecting them, while \nova{} learns them
+imperfectly (0.39--0.74). \TBD{CSE-CIC-IDS2018 per-class summary.}
+
+\subsection{Would a learned representation help?}
+\label{sec:res-meta}
+Bot, PortScan and the early DoS attacks fail because their flows lie close to benign flows in the feature space.
+A learned embedding might separate them. We tested this offline on CIC-IDS2017 only, before considering any change
+to \nova{}.
+
+At three points in the stream (windows 5, 25 and 45), we took the labelled pool that a 10\%-budget method would
+have, and trained an MLP encoder (two hidden layers of 256 units, 64-dimensional normalised output) on the GPU in
+two ways. The first uses class-balanced prototypical episodes~\cite{snell2017prototypical}. The second uses the same
+episodes plus one known class held out per episode as a pseudo-unknown, pushed away from all prototypes by a
+margin; this is open-set meta-learning in the style of PEELER~\cite{liu2020peeler}. We then measured how well the
+$k$-NN distance to benign flows separates future unseen attacks from benign flows of the same period. Thresholds
+were set on held-out benign flows of the pool, never on the future. \Cref{tab:meta} shows the second cut point.
+
+\begin{table}[t]
+\centering
+\caption{Representation-learning probe on CIC-IDS2017, cut at window 25 (pool: benign, FTP-Patator, SSH-Patator
+and four DoS classes). Detection rate of future unseen attack classes at the threshold that gives a 1\% benign
+false-positive rate on held-out pool flows, and the false-positive rate that threshold actually produces on
+future benign traffic.}
+\label{tab:meta}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+ & Raw features & Prototypical & Open-set meta-learning \\
+\midrule
+Realised benign FPR (target 1\%) & 3.1\% & 0.8\% & 0.7\% \\
+\midrule
+DDoS & 0.16 & 0.66 & 0.70 \\
+Web Attack -- SQL injection & 0.00 & 0.67 & 0.67 \\
+Web Attack -- Brute Force & 0.00 & 0.14 & 0.14 \\
+Web Attack -- XSS & 0.00 & 0.03 & 0.03 \\
+Infiltration & 1.00 & 0.00 & 0.00 \\
+PortScan & 0.00 & 0.01 & 0.01 \\
+Bot & 0.00 & 0.00 & 0.00 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Both embeddings keep the benign false-positive rate close to its target on later traffic. They raise the detection
+rate for DDoS and SQL injection, but lose Infiltration. The open-set episodes bring no consistent gain over plain
+prototypical training, at this cut point or the other two. At the 1\% threshold, Bot, PortScan and XSS stay below
+5\% detection in every representation and at every cut point. The remaining errors on these classes therefore reflect overlap with benign
+traffic in the flow features, not a lack of model capacity, and we did not add the embedding to \nova{}. The
+better-calibrated false-positive rate of the embeddings is worth pursuing, but it would have to be combined with
+the raw-feature detector to keep classes such as Infiltration.
+
+\subsection{Cost}
+\label{sec:res-cost}
+\Cref{tab:cost} lists the total training time per 70-window run. \nova{} trains once per window on the memory plus
+new labels and spends about 13 minutes per run on every dataset, compared with 6--11 minutes for CBRS replay. Prediction
+including the $k$-NN score takes about 0.05\,ms per flow on a CPU when a window is scored as a batch. Labels are identical for all
+label-using methods by construction.
+
+\begin{table}[t]
+\centering
+\caption{Total training time per run in minutes (budget 10\%, mean over three seeds; 16-core CPU).}
+\label{tab:cost}
+\small
+\IfFileExists{\results{cost_paper.tex}}{%
+\CatchFileDef{\costrows}{\results{cost_paper.tex}}{}%
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Method & CIC-IDS2017 & CSE-CIC-IDS2018 & UNSW-NB15 \\
+\midrule
+\costrows
+\bottomrule
+\end{tabular}}{\TBD{cost table not generated yet}}
+\end{table}

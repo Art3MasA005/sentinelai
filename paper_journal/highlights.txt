@@ -1,0 +1,5 @@
+Same classifier: 99.8% accuracy on a random split, macro-F1 0.13 chronologically.
+NOVA: open-world NIDS adaptation under scarce, delayed analyst labels.
+Best or tied-best of nine methods on three datasets, fewer false alarms.
+Stale rejection thresholds push replay baselines below a never-updated model.
+Per-class recalibration on held-out analyst labels prevents this failure.

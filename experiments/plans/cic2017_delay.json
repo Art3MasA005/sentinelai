@@ -1,0 +1,45 @@
+{
+ "group": "CIC17 delay b0.10",
+ "base": "../experiments/configs/cic2017_static.json",
+ "seeds": [
+  1,
+  2,
+  3
+ ],
+ "set": {
+  "store_features": false,
+  "flow_storage": "file",
+  "openworld.method": "msp+knn",
+  "adaptation.buffer_size": 20000
+ },
+ "variants": [
+  {
+   "name": "nova delay 0",
+   "set": {
+    "adaptation.method": "nova",
+    "labels.delay_windows": 0
+   }
+  },
+  {
+   "name": "cbrs_replay delay 0",
+   "set": {
+    "adaptation.method": "cbrs_replay",
+    "labels.delay_windows": 0
+   }
+  },
+  {
+   "name": "nova delay 3",
+   "set": {
+    "adaptation.method": "nova",
+    "labels.delay_windows": 3
+   }
+  },
+  {
+   "name": "cbrs_replay delay 3",
+   "set": {
+    "adaptation.method": "cbrs_replay",
+    "labels.delay_windows": 3
+   }
+  }
+ ]
+}

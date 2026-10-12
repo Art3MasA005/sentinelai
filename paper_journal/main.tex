@@ -1,0 +1,80 @@
+% NOVA paper, journal version (Elsevier elsarticle, for Computers & Security; single-anonymized review).
+% Build:  latexmk -pdf main.tex
+% Tables and figures come from experiments/analysis/paper_results.py, journal_tables.py and split_check.py.
+\documentclass[preprint,12pt]{elsarticle}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{catchfile}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{xcolor}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{lineno}
+\usepackage[hidelinks]{hyperref}
+\usepackage[capitalise,noabbrev]{cleveref}
+
+\graphicspath{{../experiments/paper/}}
+\newcommand{\results}[1]{../experiments/paper/#1}
+\newcommand{\TBD}[1]{\textcolor{red}{[#1]}}
+\newcommand{\nova}{\textsc{Nova}}
+\newcommand{\unk}{\textsc{unknown}}
+
+% Generated rows are inserted with \CatchFileDef because \input cannot be used inside a tabular.
+\newcommand{\resulttable}[4][]{%
+\begin{table}[#1]
+\centering
+\caption{#3 Mean$_{\pm\text{std}}$ over three seeds; best mean in bold. FPR in \%.}
+\label{#4}
+\small
+\setlength{\tabcolsep}{4pt}
+\IfFileExists{\results{#2}}{%
+\CatchFileDef{\resultrows}{\results{#2}}{}%
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+Method & OW-F1 & AUT & Det-F1 & FPR & U-AUROC & Forgetting\\
+\midrule
+\resultrows
+\bottomrule
+\end{tabular}}}{\TBD{\detokenize{#2} not generated yet}}
+\end{table}}
+
+\journal{Computers \& Security}
+
+\begin{document}
+
+\begin{frontmatter}
+
+\title{Open-world adaptation of network intrusion detectors under delayed and scarce labels:
+the \nova{} loop and a chronological evaluation on three datasets}
+
+\author[a]{\TBD{Author name}\corref{cor1}}
+\ead{author.email@example.com}
+\cortext[cor1]{Corresponding author.}
+\affiliation[a]{organization={\TBD{Department of Computer Science and Engineering, Green University of Bangladesh}},
+            city={Dhaka},
+            country={Bangladesh}}
+
+\input{sections/abstract}
+
+\end{frontmatter}
+
+\input{sections/introduction}
+\input{sections/related}
+\input{sections/problem}
+\input{sections/method}
+\input{sections/setup}
+\input{sections/results}
+\input{sections/discussion}
+\input{sections/conclusion}
+\input{sections/declarations}
+
+\bibliographystyle{elsarticle-num}
+\bibliography{refs}
+
+\end{document}

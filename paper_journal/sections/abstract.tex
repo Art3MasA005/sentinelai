@@ -1,0 +1,23 @@
+\begin{abstract}
+Network intrusion detectors are evaluated on random splits and reach near-perfect scores. In deployment, they
+meet drifting traffic and attack classes that did not exist at training time, while analysts can label only a
+small fraction of the flows, and only after a delay. Chronological replays of
+CIC-IDS2017, CSE-CIC-IDS2018 and UNSW-NB15 give every method the same label budget and delay, and we score them
+with metrics that stay comparable when methods learn different classes. We propose \nova{}, an adaptation loop
+that rejects unfamiliar flows with a class-conditional $k$-nearest-neighbour detector and recalibrates it for
+newly learned classes. It spends the label budget on novel, diverse traffic, propagates analyst labels to
+agreeing neighbours, keeps rare attacks in a class-balanced memory, and deploys an update or a rollback only
+after a hold-out and a forgetting check. We compare \nova{} with eight methods, including re-implementations of
+INSOMNIA, NetGuard and class-balanced replay. At a 10\% budget it is the best or tied-best
+on open-world macro-F1 on all three datasets (0.768, 0.722 and 0.509), with a lower false-positive rate
+than the strongest baseline on each. With 1\% of the flows labelled, it leads on both CIC datasets by 9.0 and 3.4 points. On UNSW-NB15, stale
+rejection thresholds push every other adaptive method below the never-updated model; an ablation shows that
+\nova{}'s per-class recalibration avoids this. We also report where it fails: short-lived attacks that resemble benign
+traffic, a neural classifier, and one dataset at the smallest budget. Code,
+configurations and per-flow predictions are released.
+\end{abstract}
+
+\begin{keyword}
+network intrusion detection \sep concept drift \sep open-set recognition \sep active learning \sep
+continual learning \sep evaluation methodology
+\end{keyword}
