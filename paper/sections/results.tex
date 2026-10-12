@@ -43,8 +43,8 @@ outside them. \nova{} recalibrates learned classes on its calibration store and 
 AUT, significantly ahead of every replay-based method ($+19.5$ to $+29.3$ points) and level with the static model
 ($+2.6$, CI $[-0.1, +4.8]$), with the highest detection F1 (0.860) and lowest false-positive rate (6.6\% against
 7.6--19.0\%). On the classes the model knows, \nova{} reaches a macro-F1 of 0.510 against at most 0.165 for any
-other method. Removing the calibration store (a check run after the main results, method
-unchanged) drops \nova{} to 0.418 and zero F1 on Exploits and Fuzzers, confirming the mechanism.
+other method. Without the calibration store, \nova{} drops to 0.418 and zero F1 on Exploits and Fuzzers
+(\cref{tab:ablation}), confirming the mechanism.
 
 INSOMNIA's self-training has the highest false-positive rate on both CIC datasets (12.4\%, 25.7\%):
 pseudo-label errors on unseen classes are fed back into training.
@@ -84,13 +84,33 @@ imperfectly''. \nova{} also halves the false-positive rate (9.7\% against $\geq$
 \end{table}
 
 \subsection{Ablation and detector}
-\resulttable{CIC17_ablation_b010_paper.tex}{Ablation on CIC-IDS2017 (budget 10\%): \nova{} with one component removed.}{tab:ablation}
+\begin{table}[t]
+\centering
+\caption{Ablation (budget 10\%): OW-F1 (change in points) and FPR (\%) with one component removed. Mean over
+three seeds; full \nova{} over the same seeds. Only CIC-IDS2017 was used for design.}
+\label{tab:ablation}
+\footnotesize
+\setlength{\tabcolsep}{2pt}
+\IfFileExists{\results{ablation_all_paper.tex}}{%
+\CatchFileDef{\ablrows}{\results{ablation_all_paper.tex}}{}%
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+ & \multicolumn{2}{c}{CIC-IDS2017} & \multicolumn{2}{c}{CSE-CIC-IDS2018} & \multicolumn{2}{c}{UNSW-NB15} \\
+Variant & OW-F1 & FPR & OW-F1 & FPR & OW-F1 & FPR \\
+\midrule
+\ablrows
+\bottomrule
+\end{tabular}}}{\TBD{ablation table not generated yet}}
+\end{table}
 
-Every component raises OW-F1 (\cref{tab:ablation}; full \nova{} 0.768). The guard matters most ($-5.6$):
-without it more updates are deployed, which flag more attacks (detection recall 0.836 against 0.799) but name the
-right class less often. The query is next ($-4.2$; unknown AUROC 0.826 without it), followed by recency
-weighting, the calibration store and the balanced memory ($-1.9$ to $-2.3$). Propagation adds least to OW-F1
-($-1.2$) but lowers the false-positive rate (3.6\% without it). Replacing the class-conditional $k$-NN detector by
+On CIC-IDS2017 every removal lowers OW-F1 (\cref{tab:ablation}), most for the guard ($-5.6$, in every seed). The
+loss is concentrated in XSS and Bot: without the guard, models that name XSS flows Brute Force are deployed, whereas
+with it XSS stays \unk{} and receives full open-world credit. Per window, no single removal is significant on
+CIC-IDS2017. On UNSW-NB15 the guard and the calibration store are essential ($-22.1$, $-9.1$); both variants lose
+Exploits and Fuzzers. On CSE-CIC-IDS2018 the stream-level changes have inconsistent signs across seeds, because four
+of its classes have only 2 to 33 flows. Per window, only the query and propagation help significantly there
+(block-bootstrap CIs $[-3.1, -0.3]$ and $[-3.6, -0.5]$). Replacing the class-conditional $k$-NN detector by
 distance to the nearest class centroid lowers OW-F1 from 0.768 to 0.712 for \nova{} and from 0.311 to 0.178 for
 the static model, which then labels almost every attack benign: one centroid cannot follow multi-modal benign
 traffic.

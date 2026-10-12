@@ -51,15 +51,16 @@ generative augmentation is not reproduced); and \emph{CBRS replay}~\cite{chrysak
 \textbf{Development and held-out data.} All design decisions, including the ablation, were made on
 CIC-IDS2017. CSE-CIC-IDS2018 and UNSW-NB15 were used for no design decision (we only checked their class
 composition with one run of the static model, which led to the UNSW-NB15 hold-out above). Both are
-evaluated only with the configuration frozen on CIC-IDS2017.
+evaluated only with the configuration frozen on CIC-IDS2017; their ablations were run after the main results.
 
 \textbf{\nova{} hyper-parameters} were fixed from design arguments and two development runs, then frozen:
 uniform share $\rho_u = 0.2$, $K = 24$ clusters, $k_p = 5$, $r = 5$, benign weight $\beta = 4$, 25\% hold-out,
 calibration store of 200 flows per class (after 50 in memory), minimum support $m = 5$, $\epsilon = 0.05$,
 rollback margin $0.05$, recency weight $\omega = 2$, $k = 10$ with 3{,}000 flows per class bank.
 
-\textbf{Runs.} Three seeds per configuration (the seed changes model initialisation, label sampling and
-clustering, not the data); we report mean $\pm$ standard deviation. To compare two methods we take the
+\textbf{Runs.} Five seeds for the main comparison and the 1\% budget, three for the other analyses (the seed
+changes model initialisation, label sampling and clustering, not the data); we report mean $\pm$ standard
+deviation. To compare two methods we take the
 per-window difference of their seed-averaged OW-F1 (or FPR) and report its mean with a 95\% moving-block bootstrap
 interval~\cite{kunsch1989jackknife} (blocks of five windows, 10{,}000 resamples), which respects the autocorrelation of consecutive windows;
 we call a difference significant only if the interval excludes zero. Neural variants use PyTorch 2.14.1 with CUDA

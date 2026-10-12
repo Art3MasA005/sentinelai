@@ -233,13 +233,20 @@ most \unk{} decisions concern drifted benign traffic.
 
 \subsection{RQ4: which components matter}
 \label{sec:res-ablation}
-\Cref{tab:ablation} removes one component at a time on all three datasets. The CIC-IDS2017 ablation was part of
-the development. The two held-out ablations were run after the main results, with the method unchanged.
+\Cref{tab:ablation} removes one component at a time on all three datasets, and \cref{tab:ablation-ci} gives the
+per-window differences with block-bootstrap intervals. The CIC-IDS2017 ablation was part of the development. The
+two held-out ablations were run after the main results, with the method unchanged. The ablations use three seeds,
+and full \nova{} is taken from the same three seeds of the main comparison.
+
+The two views can disagree. Stream-level OW-F1 gives every class the same weight, so a class with a few dozen
+flows counts as much as all benign traffic. The per-window difference gives every window the same weight, so a
+component that matters only for a short-lived class barely moves it.
 
 \begin{table}[t]
 \centering
-\caption{Ablation: OW macro-F1 (change against full \nova{} in points) and false-positive rate (\%) with one
-component removed; budget 10\%, mean over three seeds.}
+\caption{Ablation: stream-level OW macro-F1 (change against full \nova{} in points) and false-positive rate (\%)
+with one component removed; budget 10\%, mean over three seeds. Full \nova{} is the mean over the same three seeds,
+so it can differ slightly from \cref{tab:cic17,tab:ids18,tab:unsw}.}
 \label{tab:ablation}
 \small
 \setlength{\tabcolsep}{4pt}
@@ -256,17 +263,67 @@ Variant & OW-F1 & FPR & OW-F1 & FPR & OW-F1 & FPR \\
 \end{tabular}}}{\TBD{ablation table not generated yet}}
 \end{table}
 
-On CIC-IDS2017 every component raises OW-F1. The guard matters most: without it OW-F1 drops by 5.6 points to 0.712,
-although detection F1 (0.873) and unknown AUROC (0.924) rise. Without the hold-out check, more updates are
-deployed. They flag more attack flows (detection recall 0.836 against 0.799) but name the right class less often
-(open-world attack macro-recall 0.640 against 0.685), and binary detection does not penalise naming the wrong
-class. The novelty-weighted query is next ($-4.2$); it mainly improves unknown detection (unknown AUROC 0.826
-without it). Recency weighting ($-2.3$), the calibration store ($-1.9$) and the class-balanced memory ($-1.9$)
-follow. Label propagation changes OW-F1 least ($-1.2$) but keeps the false-positive rate down (3.6\% without it).
+\begin{table}[t]
+\centering
+\caption{Ablation, per window: mean difference ablated minus full \nova{} over the 70 windows (points, both
+averaged over the same three seeds), with 95\% moving-block bootstrap intervals. Negative OW-F1 and positive FPR
+differences mean that the component helps.}
+\label{tab:ablation-ci}
+\small
+\setlength{\tabcolsep}{4pt}
+\loadrows{\ablciA}{bootstrap_ablation_paper.tex}{4}%
+\loadrows{\ablciB}{bootstrap_ablation_fpr_paper.tex}{4}%
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Variant & CIC-IDS2017 & CSE-CIC-IDS2018 & UNSW-NB15 \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{OW macro-F1}} \\
+\ablciA
+\midrule
+\multicolumn{4}{@{}l}{\emph{False-positive rate}} \\
+\ablciB
+\bottomrule
+\end{tabular}}
+\end{table}
 
-\TBD{Held-out ablations: which components transfer to CSE-CIC-IDS2018 and UNSW-NB15 (runs in progress). On
-UNSW-NB15, removing the calibration store costs 9.1 points (0.418) and reproduces the baselines' failure: zero F1
-on Exploits and Fuzzers.}
+\textbf{CIC-IDS2017.} Removing any component lowers stream-level OW-F1, by 1.2 to 5.6 points. For the guard, the
+query, recency weighting and the balanced memory the drop occurs in every seed; for the calibration store and
+propagation its sign varies between seeds. Per window, no difference is significant on its own; the query and
+the calibration store come closest ($-1.1$ each, upper bound 0.0). The guard has the largest stream-level effect
+($-5.6$; $-5.3$ to $-5.9$ in the three seeds), and it is concentrated in two classes. Without the guard, XSS falls
+from 0.98 to 0.40 F1, mostly because \nova{} deploys models that name its flows Brute Force, and Bot falls from 0.24
+to 0.01, because a deployed model knows the class but rejects its flows. With the guard, the candidates that
+confuse the two web attacks are rejected and XSS flows stay \unk{}, which open-world macro-F1 credits in full. Part
+of the guard's benefit on CIC-IDS2017 is therefore the credit for not learning a class that cannot be learned well
+from a few labels (\cref{sec:discussion}). Without the hold-out check, more updates are deployed. They flag more
+attack flows (detection recall 0.836 against 0.799) but name the right class less often (open-world attack
+macro-recall 0.640 against 0.685), and binary detection does not penalise naming the wrong class. The query mainly
+improves unknown detection (unknown AUROC 0.826 without it, against 0.872), and propagation keeps the
+false-positive rate down (3.6\% without it, against 2.8\%).
+
+\textbf{UNSW-NB15.} Here the guard and the calibration store are essential. Without the guard, stream-level OW-F1
+falls by 22 points in every seed (per window $-24.9$, CI $[-31.1, -18.4]$); without the calibration store, by 6 to
+14 points ($-17.7$ per window). Both variants fail in the same way: Exploits and Fuzzers drop to zero F1, the
+stale-threshold failure of the replay baselines (\cref{sec:res-main}). The calibration store prevents it by
+recalibrating learned classes; the guard prevents it by not deploying candidates that lose on the newest labelled
+window. The query ($-4.2$) and the balanced memory ($-4.0$) also help significantly per window. Recency weighting and
+propagation slightly lower OW-F1 ($+0.5$ each when removed; the intervals just exclude or touch zero), but
+propagation lowers the false-positive rate significantly ($+1.5$ points without it).
+
+\textbf{CSE-CIC-IDS2018.} The stream-level differences are large but inconsistent. Removing the guard changes OW-F1
+by $+13.7$, $-3.5$ and $+4.8$ points in the three seeds, and the other components vary similarly. The reason is the
+composition of the stream (\cref{tab:audit}): four of its nine classes have 33, 14, 7 and 2 flows, and each
+counts one ninth of macro-F1. Full \nova{} scores 0.54 on LOIC-UDP (33 flows), where four of the six ablated
+variants score 1.00; this single class accounts for about five points of OW-F1. Per window, only the query
+($-1.5$, CI $[-3.1, -0.3]$) and propagation ($-1.8$, CI $[-3.6, -0.5]$) have a significant effect, and both help.
+Removing the guard makes no significant difference to OW-F1, but it raises the false-positive rate ($+1.5$ points,
+CI $[+0.1, +4.3]$).
+
+In short, removing the query, the calibration store or the guard lowers per-window OW-F1 on all three datasets,
+but only the query does so significantly on both held-out datasets. The guard and the calibration store are what
+keep \nova{} working on UNSW-NB15; elsewhere they mainly affect a few short-lived classes and the false-positive
+rate. Recency weighting and propagation do not help OW-F1 on UNSW-NB15.
 
 \textbf{What the guard does.} \Cref{tab:guard} counts the guard's decisions. In each run, \nova{} proposes one
 candidate per labelled window (69). At a 10\% budget, the guard rejects 17 to 24 of them and rolls back a deployed
@@ -277,7 +334,8 @@ with open-world credit: the deployed model receives full credit for rejecting a 
 candidate is scored on how well it names that class, so a candidate that learns a new class imperfectly can lose
 the comparison. The guard is therefore conservative towards new classes. At a 1\% budget the hold-out holds only
 about ten labelled flows (minimum 7 to 9), so the guard's decisions rest on very little evidence. The ablation
-shows that the guard still helps on CIC-IDS2017 at 10\%, but we did not test whether it helps or hurts at 1\%.
+shows that the guard helps at 10\% on UNSW-NB15 and, at stream level, on CIC-IDS2017, but we did not test whether
+it helps or hurts at 1\%.
 
 \begin{table}[t]
 \centering
@@ -311,8 +369,18 @@ it.
 
 \subsection{RQ5: sensitivity to delay, thresholds and classifier}
 \label{sec:res-sens}
-\textbf{Label delay.} \Cref{tab:delay} varies the delay on CIC-IDS2017 for \nova{} and CBRS replay. \TBD{Text
-after the delay runs.}
+\textbf{Label delay.} \Cref{tab:delay} varies the delay on CIC-IDS2017 for \nova{} and CBRS replay (three seeds;
+the delay-1 columns are the same three seeds of the main comparison). AUT falls with the delay for both methods,
+from 0.899 to 0.806 for \nova{} and from 0.854 to 0.803 for CBRS replay, because every new class is rejected or
+misnamed for longer. Stream-level OW-F1 does not fall monotonically: at delay 0 it is lower than at delay 1 for
+both methods. Without delay, most classes are learned earlier and improve (PortScan from 0.49 to 0.80 for
+\nova{}), but the short-lived web attacks are learned from their first few labels and confused with each other
+(\nova{}'s XSS F1 falls from 0.98 to 0.14), whereas with a one-window delay they stay \unk{} and receive full
+open-world credit. \nova{}'s per-window lead over CBRS replay shrinks with the delay: $+4.5$ points at delay 0 (CI
+$[+1.7, +7.7]$), $+2.0$ at delay 1 (CI $[-0.5, +4.3]$) and $+0.3$ at delay 3 (CI $[-1.9, +2.0]$). Its false-positive
+rate stays significantly lower at every delay (2.5, 2.8 and 3.4\% against 4.4, 4.5 and 4.5\%). The quicker the
+labels arrive, the more \nova{}'s choice of what to label matters; with a three-window delay the two methods are
+equally accurate.
 
 \begin{table}[t]
 \centering

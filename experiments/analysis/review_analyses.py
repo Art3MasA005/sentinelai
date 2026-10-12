@@ -5,7 +5,8 @@
 2. Open-world metric decomposition from the per-flow predictions: known-class macro-F1, false rejection of
    known flows, unknown recall / precision, and identification of known attack flows.
 3. Moving-block bootstrap confidence intervals for the per-window OW-F1 difference between NOVA and each method
-   (windows are autocorrelated, so a plain paired test overstates certainty).
+   (windows are autocorrelated, so a plain paired test overstates certainty), and the same for each one-component
+   ablation against full NOVA on the same seeds.
 
 usage (from backend/): .venv\\Scripts\\python.exe ..\\experiments\\analysis\\review_analyses.py [--out DIR]
 """
@@ -143,6 +144,42 @@ def bootstrap_table(db, budget: str = "b0.10", key: str = "macro_f1_ow") -> dict
     return res
 
 
+ABLATIONS = ["guard", "active query", "recency weight", "calibration store", "balanced memory", "propagation"]
+
+
+def ablation_bootstrap(db, key: str = "macro_f1_ow") -> dict[str, dict]:
+    """Per-window difference ablated NOVA - full NOVA, both averaged over the ablation's seeds (full NOVA from the
+    main comparison, restricted to those seeds); moving-block bootstrap CI. Negative = the component helps."""
+    def by_seed(pattern):
+        return {int(n.rsplit("seed ", 1)[1]): rid for rid, n in runs_like(db, pattern)}
+
+    res = {}
+    for tag in TAGS:
+        full = by_seed(f"{tag} main b0.10 · nova · seed %")
+        res[tag] = {}
+        for a in ABLATIONS:
+            abl = by_seed(f"{tag} ablation b0.10 · nova -{a} · seed %")
+            seeds = sorted(set(abl) & set(full))
+            if not seeds:
+                continue
+            f = np.nanmean(np.vstack([window_series(db, full[s], key) for s in seeds]), axis=0)
+            o = np.nanmean(np.vstack([window_series(db, abl[s], key) for s in seeds]), axis=0)
+            n = min(len(f), len(o))
+            res[tag][a] = block_bootstrap(o[:n] - f[:n])
+    return res
+
+
+def ablation_bootstrap_rows(bt: dict) -> str:
+    lines = []
+    for a in ABLATIONS:
+        cells = []
+        for tag in TAGS:
+            v = bt.get(tag, {}).get(a)
+            cells.append("--" if v is None else f"{100 * v[0]:+.1f} [{100 * v[1]:+.1f}, {100 * v[2]:+.1f}]")
+        lines.append(rf"\quad $-$\,{a} & " + " & ".join(cells) + r" \\")
+    return "\n".join(lines) + "\n"
+
+
 def bootstrap_rows(bt: dict, pct_scale: float = 100.0) -> str:
     lines = []
     for m in METHODS[1:]:
@@ -199,6 +236,10 @@ def main():
         bt = bootstrap_table(db, budget, key)
         report[name] = bt
         (out / f"{name}_paper.tex").write_text(bootstrap_rows(bt), encoding="utf-8")
+    for name, key in (("bootstrap_ablation", "macro_f1_ow"), ("bootstrap_ablation_fpr", "detect_fpr")):
+        bt = ablation_bootstrap(db, key)
+        report[name] = bt
+        (out / f"{name}_paper.tex").write_text(ablation_bootstrap_rows(bt), encoding="utf-8")
 
     (out / "review_analyses.json").write_text(json.dumps(report, indent=1), encoding="utf-8")
     print(json.dumps({k: v for k, v in report.items() if k.startswith("guard")}, indent=1))
