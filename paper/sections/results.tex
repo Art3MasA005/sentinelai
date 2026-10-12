@@ -72,19 +72,43 @@ the two strongest baselines and the static model in colour, the remaining baseli
 \end{figure*}
 
 \subsection{Label budget}
-With 1\% of each window labelled (\cref{fig:budget}), the lead of \nova{} on CIC-IDS2017 grows from 1.2 to 9.0
-OW-F1 points (0.651 against 0.561 for CBRS replay) and from 2.0 to 6.5 AUT points (0.820 against 0.755). \nova{}
-loses 0.117 OW-F1 when the budget shrinks tenfold, CBRS replay loses 0.195, and the other methods lose 0.07 to
-0.17 from a lower start. Unknown-attack AUROC stays at 0.855 for \nova{} but falls to 0.775 for CBRS replay.
-CBRS keeps a slightly higher detection F1 (0.836 against 0.825). \TBD{1\% budget on CSE-CIC-IDS2018 and
-UNSW-NB15 (runs in progress).}
+\Cref{tab:budget} repeats the comparison with 1\% of each window labelled (40 flows per window). The
+configuration is unchanged. The methods that need no labels are omitted, since their results do not depend on
+the budget.
 
-\begin{figure}[t]
+On CIC-IDS2017 the lead of \nova{} grows from 1.2 to 9.0 OW-F1 points (0.651 against 0.561 for CBRS replay) and
+from 2.0 to 6.5 AUT points (0.820 against 0.755). \nova{} loses 0.117 OW-F1 when the budget shrinks tenfold, CBRS
+replay 0.195. Unknown-attack AUROC stays at 0.855 for \nova{} but falls to 0.775 for CBRS replay. On
+CSE-CIC-IDS2018, where the two methods tie at 10\%, \nova{} leads at 1\% (0.570 against 0.536, AUT 0.830 against
+0.811, $p = 0.002$).
+
+On UNSW-NB15 \nova{} is behind at 1\%: 0.469 against 0.504 for periodic retraining, and 0.48 for continual replay
+and guarded selective retraining. The per-class results show that this lead comes from \emph{not} learning.
+With 40 labels per window, periodic retraining never collects the five labels per class it needs to learn the
+four held-out classes (in all three seeds its last model still leaves out DoS and Reconnaissance as too rare, and
+has no Shellcode or Worms labels). It keeps rejecting them as \unk{}, which the metric credits in full (per-class F1 0.99 to
+1.00), while it scores 0 on Exploits and Fuzzers, like the static model. \nova{} spends its labels on novel flows,
+so it does learn DoS and Reconnaissance. In UNSW-NB15, however, these overlap heavily with Exploits, and in the first
+seed 38\% of the DoS flows scored after DoS was learned are labelled Exploits. A class that is learned but confused scores lower than a
+class that stays \unk{}. At the same time, \nova{} halves the false-positive rate (9.7\% against 15.7--18.7\%)
+and has the highest detection F1 (0.807 against at most 0.721).
+
+\begin{table}[t]
 \centering
-\IfFileExists{\results{fig_budget_CIC17.pdf}}{\includegraphics[width=\columnwidth]{fig_budget_CIC17.pdf}}{\TBD{figure}}
-\caption{OW macro-F1 on CIC-IDS2017 with 10\% and 1\% of each window labelled (mean $\pm$ std over three seeds).}
-\label{fig:budget}
-\end{figure}
+\caption{Label budget 1\%: open-world macro-F1 and false-positive rate (\%), mean over three seeds; best per
+column in bold.}
+\label{tab:budget}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\IfFileExists{\results{budget_b001_paper.tex}}{%
+\CatchFileDef{\budgetrows}{\results{budget_b001_paper.tex}}{}%
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+\budgetrows
+\bottomrule
+\end{tabular}}}{\TBD{budget table not generated yet}}
+\end{table}
 
 \subsection{Ablation}
 \resulttable{CIC17_ablation_b010_paper.tex}{Ablation on CIC-IDS2017 (budget 10\%): \nova{} with one component removed.}{tab:ablation}
