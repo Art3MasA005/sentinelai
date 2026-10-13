@@ -22,8 +22,11 @@ class _SystemPageState extends ConsumerState<SystemPage> {
   @override
   void initState() {
     super.initState();
-    // Resource usage is live: refresh while this page is open.
-    _timer = Timer.periodic(const Duration(seconds: 3), (_) => ref.invalidate(systemProvider));
+    // Resource usage is live: refresh while this page is visible (the shell keeps visited pages alive
+    // offstage with tickers muted, and a muted page should not poll).
+    _timer = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (mounted && TickerMode.valuesOf(context).enabled) ref.invalidate(systemProvider);
+    });
   }
 
   @override

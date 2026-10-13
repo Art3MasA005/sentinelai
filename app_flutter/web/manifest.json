@@ -1,11 +1,11 @@
 {
-    "name": "sentinelai",
-    "short_name": "sentinelai",
+    "name": "SentinelAI",
+    "short_name": "SentinelAI",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#070B12",
+    "theme_color": "#070B12",
+    "description": "SentinelAI: drift-aware, open-world intrusion detection research console (offline replay).",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

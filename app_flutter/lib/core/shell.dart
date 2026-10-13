@@ -15,6 +15,7 @@ import '../features/settings/settings_page.dart';
 import '../features/system/system_page.dart';
 import '../features/traffic/traffic_page.dart';
 import 'api/models.dart';
+import 'brand.dart';
 import 'format.dart';
 import 'glass_menu.dart';
 import 'state.dart';
@@ -100,18 +101,109 @@ class _AppShellState extends ConsumerState<AppShell> {
                         }
                       },
                     ),
-                    Expanded(
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 150),
-                        child: KeyedSubtree(key: ValueKey(page), child: _page(page)),
-                      ),
-                    ),
+                    Expanded(child: _PageStack(current: page, builder: _page)),
                   ],
                 ),
               ),
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------- page transitions
+
+/// Keeps every visited page alive (scroll position, filters and loaded data survive navigation) and
+/// cross-fades between them: the new page fades in while rising a few pixels, the old one fades out
+/// quickly. Hidden pages are offstage with tickers muted, so they cost no paint or animation time.
+class _PageStack extends StatefulWidget {
+  const _PageStack({required this.current, required this.builder});
+  final AppPage current;
+  final Widget Function(AppPage) builder;
+
+  @override
+  State<_PageStack> createState() => _PageStackState();
+}
+
+class _PageStackState extends State<_PageStack> {
+  final _visited = <AppPage>[];
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_visited.contains(widget.current)) _visited.add(widget.current);
+    // The current page is painted last so it sits on top during the cross-fade.
+    final order = [..._visited.where((p) => p != widget.current), widget.current];
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        for (final p in order)
+          _PageLayer(key: ValueKey(p), active: p == widget.current, child: widget.builder(p)),
+      ],
+    );
+  }
+}
+
+class _PageLayer extends StatefulWidget {
+  const _PageLayer({super.key, required this.active, required this.child});
+  final bool active;
+  final Widget child;
+
+  @override
+  State<_PageLayer> createState() => _PageLayerState();
+}
+
+class _PageLayerState extends State<_PageLayer> with SingleTickerProviderStateMixin {
+  static const _in = Duration(milliseconds: 280);
+  static const _out = Duration(milliseconds: 140);
+
+  late final AnimationController _c = AnimationController(vsync: this, duration: _in, reverseDuration: _out)
+    ..addStatusListener((_) => setState(() {}));
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.active) _c.forward();
+  }
+
+  @override
+  void didUpdateWidget(_PageLayer old) {
+    super.didUpdateWidget(old);
+    if (widget.active && !old.active) {
+      _c.forward(from: 0);
+    } else if (!widget.active && old.active) {
+      _c.reverse();
+    }
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hidden = !widget.active && _c.isDismissed;
+    final fade = CurvedAnimation(parent: _c, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
+    return Offstage(
+      offstage: hidden,
+      child: TickerMode(
+        enabled: !hidden,
+        child: IgnorePointer(
+          ignoring: !widget.active,
+          child: FadeTransition(
+            opacity: fade,
+            child: SlideTransition(
+              // Rise in from slightly below; the outgoing page stays in place while it fades.
+              position: widget.active
+                  ? Tween(begin: const Offset(0, 0.018), end: Offset.zero).animate(fade)
+                  : const AlwaysStoppedAnimation(Offset.zero),
+              child: RepaintBoundary(child: widget.child),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -136,25 +228,7 @@ class Sidebar extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 30,
-                    height: 30,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(color: AppColors.purple, borderRadius: BorderRadius.circular(7)),
-                    child: const Text(
-                      'S',
-                      style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: Colors.white),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'SENTINELAI',
-                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18, letterSpacing: 0.6),
-                  ),
-                ],
-              ),
+              const SentinelWordmark(markSize: 24, fontSize: 19),
               const SizedBox(height: 10),
               Text(
                 'NETWORK DEFENSE LAB',
@@ -254,32 +328,47 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Highlight, icon and label colours ease between states instead of switching in one frame.
+    const d = Duration(milliseconds: 220);
+    const curve = Curves.easeOutCubic;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Material(
-        color: active ? AppColors.navActive : Colors.transparent,
-        shape: RoundedRectangleBorder(
+      child: AnimatedContainer(
+        duration: d,
+        curve: curve,
+        decoration: BoxDecoration(
+          color: active ? AppColors.navActive : AppColors.navActive.withValues(alpha: 0),
           borderRadius: BorderRadius.circular(8),
-          side: BorderSide(color: active ? AppColors.navActiveBorder : Colors.transparent),
+          border: Border.all(color: active ? AppColors.navActiveBorder : AppColors.navActiveBorder.withValues(alpha: 0)),
         ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(8),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-            child: Row(
-              children: [
-                Icon(page.icon, size: 17, color: active ? AppColors.purple : AppColors.textSecondary),
-                const SizedBox(width: 14),
-                Text(
-                  page.label,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: active ? FontWeight.w700 : FontWeight.w400,
-                    color: active ? AppColors.text : AppColors.textSecondary,
+        child: Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+              child: Row(
+                children: [
+                  TweenAnimationBuilder<Color?>(
+                    tween: ColorTween(end: active ? AppColors.purple : AppColors.textSecondary),
+                    duration: d,
+                    curve: curve,
+                    builder: (_, c, _) => Icon(page.icon, size: 17, color: c),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 14),
+                  AnimatedDefaultTextStyle(
+                    duration: d,
+                    curve: curve,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: active ? FontWeight.w700 : FontWeight.w400,
+                      color: active ? AppColors.text : AppColors.textSecondary,
+                    ),
+                    child: Text(page.label),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
