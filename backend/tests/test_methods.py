@@ -170,3 +170,31 @@ def test_nova_ablation_switches_change_behaviour(env):
     props = [x["validation"].get("propagated_labels") for x in passive.adapt if x["decision"] == "accepted"]
     assert props and all(p == 0 for p in props)
     assert digest(full) != digest(passive)
+
+
+def test_netguard_density_fit_survives_collapsed_components(monkeypatch):
+    """A mixture component can collapse onto duplicate flows (sklearn raises ValueError); the fit must retry with
+    stronger regularisation instead of failing the run, and a fit that succeeds first time must be unchanged."""
+    from types import SimpleNamespace
+
+    from sklearn.mixture import GaussianMixture
+
+    from app.ml.strategies import NetGuardPriorSelectionStrategy
+
+    s = NetGuardPriorSelectionStrategy.__new__(NetGuardPriorSelectionStrategy)
+    s.cfg = SimpleNamespace(netguard_components=8)
+    s.engine = SimpleNamespace(seed=5)
+    x = np.random.default_rng(0).normal(size=(1000, 4))
+    assert s._gmm(x).reg_covar == 1e-3
+
+    original = GaussianMixture.fit
+
+    def fit(self, X, y=None):
+        if self.reg_covar < 1e-2:
+            raise ValueError("Fitting the mixture model failed because some components have ill-defined covariance")
+        return original(self, X, y)
+
+    monkeypatch.setattr(GaussianMixture, "fit", fit)
+    gmm = s._gmm(x)
+    assert gmm.reg_covar == 1e-2
+    assert np.all(np.isfinite(gmm.score_samples(x)))
