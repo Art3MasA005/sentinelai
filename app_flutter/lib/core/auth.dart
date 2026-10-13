@@ -51,7 +51,8 @@ class AuthState {
 }
 
 class AuthController extends Notifier<AuthState> {
-  static const minSplash = Duration(milliseconds: 1800);
+  /// The splash brand animation (SplashScreen.intro, 2.6 s) plus a short hold on its final frame.
+  static const minSplash = Duration(milliseconds: 2900);
 
   @override
   AuthState build() => const AuthState();

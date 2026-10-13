@@ -84,11 +84,11 @@ void main() {
     final theme = p.glass ? 'light' : 'dark';
     testWidgets(
       'splash loading $theme',
-      (t) => _shoot(t, p, slow, 'splash_loading_$theme', const Duration(milliseconds: 1500)),
+      (t) => _shoot(t, p, slow, 'splash_loading_$theme', const Duration(milliseconds: 2800)),
     );
     testWidgets(
       'splash offline $theme',
-      (t) => _shoot(t, p, down, 'splash_offline_$theme', const Duration(milliseconds: 2500)),
+      (t) => _shoot(t, p, down, 'splash_offline_$theme', const Duration(milliseconds: 2800)),
     );
   }
 }
