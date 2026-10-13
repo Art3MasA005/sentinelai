@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -34,6 +35,11 @@ def cmd_serve(args) -> None:
     settings = get_settings()
     if args.host not in ("127.0.0.1", "localhost") and not args.allow_remote:
         sys.exit("Refusing to bind to a non-local address without --allow-remote (MVP is local-first).")
+    # Started by the desktop app without a console (pythonw), stdout/stderr are None and logging would fail:
+    # send them to a log file (or discard them).
+    if args.log_file or sys.stdout is None:
+        out = open(args.log_file or os.devnull, "a", buffering=1, encoding="utf-8")  # noqa: SIM115
+        sys.stdout = sys.stderr = out
     uvicorn.run("app.main:app", host=args.host or settings.host, port=args.port or settings.port, reload=args.reload)
 
 
@@ -107,6 +113,7 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--port", type=int, default=None)
     s.add_argument("--reload", action="store_true")
     s.add_argument("--allow-remote", action="store_true")
+    s.add_argument("--log-file", help="append server output to this file (used when started without a console)")
     s.set_defaults(fn=cmd_serve)
 
     d = sub.add_parser("make-demo")

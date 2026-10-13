@@ -1,16 +1,30 @@
+import 'dart:ui' show AppExitResponse;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/auth.dart';
+import 'core/backend_launcher.dart';
 import 'core/dialogs.dart';
 import 'core/shell.dart';
 import 'core/state.dart';
 import 'core/theme.dart';
 import 'features/auth/splash_screen.dart';
 
+// ignore: unused_element
+late final AppLifecycleListener _lifecycle;
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Stop the backend on exit if this app started it (see BackendLauncher).
+  _lifecycle = AppLifecycleListener(
+    onExitRequested: () async {
+      BackendLauncher.stop();
+      return AppExitResponse.exit;
+    },
+    onDetach: BackendLauncher.stop,
+  );
   final prefs = await SharedPreferences.getInstance();
   runApp(
     ProviderScope(
