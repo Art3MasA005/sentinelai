@@ -8,6 +8,7 @@ import '../../core/state.dart';
 import '../../core/status.dart';
 import '../../core/theme.dart';
 import '../../core/widgets.dart';
+import '../../core/dialogs.dart';
 
 /// Runs ticked for comparison; consumed by the Reports page.
 class CompareSelection extends Notifier<Set<String>> {
@@ -194,7 +195,7 @@ class _NewExperimentState extends ConsumerState<_NewExperiment> {
     }
   }
 
-  Future<void> _showValidation(Json r) => showDialog<void>(
+  Future<void> _showValidation(Json r) => showFrostedDialog<void>(
     context: context,
     builder: (_) => _GlassDialog(
       title: 'Dataset validation · ${r['dataset_id']}',
@@ -237,7 +238,10 @@ class _NewExperimentState extends ConsumerState<_NewExperiment> {
   );
 
   Future<void> _import() async {
-    final req = await showDialog<(String, String, String?)>(context: context, builder: (_) => const _ImportDialog());
+    final req = await showFrostedDialog<(String, String, String?)>(
+      context: context,
+      builder: (_) => const _ImportDialog(),
+    );
     if (req == null) return;
     setState(() => _busy = true);
     final slow = ref.read(apiProvider).withTimeout(const Duration(minutes: 15));
@@ -521,7 +525,7 @@ class _RunsTable extends ConsumerWidget {
   }
 
   Future<void> _delete(BuildContext context, WidgetRef ref, Run run) async {
-    final ok = await showDialog<bool>(
+    final ok = await showFrostedDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -557,7 +561,7 @@ class _RunsTable extends ConsumerWidget {
     try {
       final lines = await ref.read(apiProvider).logs(run.id, tail: 400);
       if (!context.mounted) return;
-      await showDialog<void>(
+      await showFrostedDialog<void>(
         context: context,
         builder: (_) => _GlassDialog(
           title: 'Logs · ${runLabel(run.seq)} · ${run.name}',

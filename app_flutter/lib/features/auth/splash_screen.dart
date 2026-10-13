@@ -7,6 +7,7 @@ import '../../core/auth.dart';
 import '../../core/brand.dart';
 import '../../core/state.dart';
 import '../../core/theme.dart';
+import '../../core/dialogs.dart';
 
 /// First screen: brand animation + boot sequence (backend → sign-in options → saved session).
 /// The mark drops in, jumps, lands, then rolls left; the name is revealed from behind it as it goes.
@@ -48,7 +49,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
 
   Future<void> _changeUrl() async {
     final ctl = TextEditingController(text: ref.read(settingsProvider).baseUrl);
-    final url = await showDialog<String>(
+    final url = await showFrostedDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -83,8 +84,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
     final url = ref.watch(settingsProvider).baseUrl;
     final bg = AppColors.isGlass ? const Color(0xFFF5F6F8) : AppColors.background;
     // Late elements of the sequence: tagline, then status and footer.
-    final tagline = CurvedAnimation(parent: _intro, curve: const Interval(0.80, 0.96, curve: Curves.easeOutCubic));
-    final status = CurvedAnimation(parent: _intro, curve: const Interval(0.88, 1.0, curve: Curves.easeOut));
+    final tagline = CurvedAnimation(
+      parent: _intro,
+      curve: const Interval(0.80, 0.96, curve: Curves.easeOutCubic),
+    );
+    final status = CurvedAnimation(
+      parent: _intro,
+      curve: const Interval(0.88, 1.0, curve: Curves.easeOut),
+    );
     return Scaffold(
       backgroundColor: bg,
       body: Stack(
@@ -268,7 +275,10 @@ class _BrandIntro extends StatelessWidget {
                   child: Transform(
                     alignment: Alignment.bottomCenter,
                     transform: Matrix4.diagonal3Values(scaleX, scaleY, 1),
-                    child: Transform.rotate(angle: angle, child: const SentinelMark(size: _mark)),
+                    child: Transform.rotate(
+                      angle: angle,
+                      child: const SentinelMark(size: _mark),
+                    ),
                   ),
                 ),
               ),

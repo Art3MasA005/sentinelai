@@ -11,6 +11,7 @@ import '../../core/state.dart';
 import '../../core/status.dart';
 import '../../core/theme.dart';
 import '../../core/widgets.dart';
+import '../../core/dialogs.dart';
 import '../dashboard/dashboard_page.dart';
 
 class FlowQuery {
@@ -78,9 +79,8 @@ class _TrafficPageState extends ConsumerState<TrafficPage> {
     try {
       final flow = await ref.read(apiProvider).flow(runId, flowId);
       if (!mounted) return;
-      await showDialog<void>(
+      await showFrostedDialog<void>(
         context: context,
-        barrierColor: AppColors.isGlass ? const Color(0x330F172A) : const Color(0x99000000),
         builder: (_) => Dialog(
           insetPadding: const EdgeInsets.all(40),
           backgroundColor: Colors.transparent,

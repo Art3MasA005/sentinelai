@@ -111,7 +111,9 @@ class AdaptationPage extends ConsumerWidget {
               StatCard(
                 label: 'Accepted',
                 value: fmtInt(count['accepted']),
-                caption: const {'guarded_selective', 'nova'}.contains(run.method) ? 'Passed validation' : 'Deployed by schedule',
+                caption: const {'guarded_selective', 'nova'}.contains(run.method)
+                    ? 'Passed validation'
+                    : 'Deployed by schedule',
                 color: AppColors.green,
               ),
               StatCard(

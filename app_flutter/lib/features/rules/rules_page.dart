@@ -9,6 +9,7 @@ import '../../core/format.dart';
 import '../../core/state.dart';
 import '../../core/theme.dart';
 import '../../core/widgets.dart';
+import '../../core/dialogs.dart';
 import '../experiments/experiments_page.dart';
 
 /// One editable number in the policy body. `path` addresses the JSON (e.g. ['openworld', 'msp_quantile']).
@@ -146,7 +147,7 @@ class _RulesPageState extends ConsumerState<RulesPage> {
 
   Future<void> _save() async {
     if (_errors.isNotEmpty) return showSnack(context, 'Fix the highlighted values first', error: true);
-    final note = await showDialog<String>(context: context, builder: (_) => const _NoteDialog());
+    final note = await showFrostedDialog<String>(context: context, builder: (_) => const _NoteDialog());
     if (note == null || note.trim().isEmpty) return;
     setState(() => _saving = true);
     try {

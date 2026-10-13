@@ -104,7 +104,9 @@ class _AppShellState extends ConsumerState<AppShell> {
                         }
                       },
                     ),
-                    Expanded(child: _PageStack(current: page, builder: _page)),
+                    Expanded(
+                      child: _PageStack(current: page, builder: _page),
+                    ),
                   ],
                 ),
               ),
@@ -155,12 +157,7 @@ class _PageStackState extends State<_PageStack> {
       fit: StackFit.expand,
       children: [
         for (final p in order)
-          _PageLayer(
-            key: ValueKey(p),
-            active: p == widget.current,
-            origin: _origin,
-            child: widget.builder(p),
-          ),
+          _PageLayer(key: ValueKey(p), active: p == widget.current, origin: _origin, child: widget.builder(p)),
       ],
     );
   }
@@ -385,7 +382,9 @@ class _NavItem extends StatelessWidget {
         decoration: BoxDecoration(
           color: active ? AppColors.navActive : AppColors.navActive.withValues(alpha: 0),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: active ? AppColors.navActiveBorder : AppColors.navActiveBorder.withValues(alpha: 0)),
+          border: Border.all(
+            color: active ? AppColors.navActiveBorder : AppColors.navActiveBorder.withValues(alpha: 0),
+          ),
         ),
         child: Material(
           type: MaterialType.transparency,
