@@ -328,8 +328,17 @@ class NetGuardPriorSelectionStrategy(ContinualReplayStrategy):
         if len(x) > self.FIT_ROWS:
             x = x[rng.choice(len(x), self.FIT_ROWS, replace=False)]
         k = max(1, min(self.cfg.netguard_components, len(x) // 50))
-        return GaussianMixture(k, covariance_type="diag", reg_covar=1e-3, max_iter=100,
-                               random_state=self.engine.seed).fit(x)
+        # A component can collapse onto duplicate flows; retry with stronger regularisation (fits that succeed
+        # first time are unchanged).
+        for reg in (1e-3, 1e-2, 1e-1, 1.0):
+            try:
+                return GaussianMixture(k, covariance_type="diag", reg_covar=reg, max_iter=100,
+                                       random_state=self.engine.seed).fit(x)
+            except ValueError:
+                sink = getattr(self.engine, "sink", None)
+                if sink is not None:
+                    sink.log(f"netguard_ps: mixture fit failed with reg_covar={reg:g}; retrying")
+        return GaussianMixture(1, covariance_type="diag", reg_covar=1.0, random_state=self.engine.seed).fit(x)
 
     def select(self, window, x, out):
         if self.gmm_labelled is None:
