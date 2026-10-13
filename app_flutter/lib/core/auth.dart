@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'api/api_client.dart';
 import 'api/models.dart';
+import 'backend_launcher.dart';
 import 'state.dart';
 
 /// Session token issued by the backend at sign-in; persisted so the app reopens signed in.
@@ -69,7 +70,8 @@ class AuthController extends Notifier<AuthState> {
     final started = DateTime.now();
     state = const AuthState(step: 'Connecting to local backend…', progress: 0.15);
     try {
-      await _api.health();
+      await _reachBackend(stale);
+      if (stale()) return;
       if (stale()) return;
       state = state.copyWith(step: 'Loading sign-in options…', progress: 0.45);
       final Json config;
@@ -104,6 +106,31 @@ class AuthController extends Notifier<AuthState> {
       if (left > Duration.zero) await Future<void>.delayed(left);
       if (stale()) return;
       state = state.copyWith(phase: AuthPhase.offline, error: e.message, step: 'Backend unreachable', progress: 0);
+    }
+  }
+
+  /// Health check; if a local backend is not running, the desktop app starts it and waits for it.
+  Future<void> _reachBackend(bool Function() stale) async {
+    try {
+      await _api.health();
+      return;
+    } on ApiException catch (e) {
+      // Only "nothing answered" is fixed by starting a backend; an HTTP error means one is running.
+      final uri = Uri.tryParse(_api.baseUrl);
+      final local = uri != null && (uri.host == '127.0.0.1' || uri.host == 'localhost');
+      if (e.status != null || !local || !await BackendLauncher.start(uri.port)) rethrow;
+    }
+    state = state.copyWith(step: 'Starting local backend…', progress: 0.3);
+    final deadline = DateTime.now().add(const Duration(seconds: 40));
+    while (true) {
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+      if (stale()) return;
+      try {
+        await _api.health();
+        return;
+      } on ApiException {
+        if (DateTime.now().isAfter(deadline)) rethrow;
+      }
     }
   }
 

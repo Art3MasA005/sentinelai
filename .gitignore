@@ -18,3 +18,7 @@ app_flutter/build/
 .idea/
 *.egg-info/
 paper_journal/main.pdf
+
+# Installer output and the log of a backend started by the desktop app
+dist/
+backend/backend.log
