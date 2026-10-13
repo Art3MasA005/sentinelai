@@ -15,7 +15,9 @@ classes on recent held-out labels keeps it level with the never-updated model on
 replay-based method falls far below it. Separating the open-world score into known-class and unknown-class outcomes,
 and counting what the deployment guard does, proved as informative as the headline metric.
 
-The approach has clear limits. Short-lived attacks that resemble benign traffic remain undetected by every method
+The approach has clear limits. Its components do not help equally everywhere: the guard and the calibration store
+are essential on UNSW-NB15 but change little per window on the CIC datasets, and on CSE-CIC-IDS2018 a few classes
+with a handful of flows decide the stream-level comparison. Short-lived attacks that resemble benign traffic remain undetected by every method
 and every representation we tried, including a meta-learned embedding. The accuracy gain did not carry over to an
 MLP classifier, and on one dataset at the smallest budget, open-world scoring favours methods that never learn the
 new classes. Future work should evaluate with noisy analysts, longer captures and corrected datasets, and combine

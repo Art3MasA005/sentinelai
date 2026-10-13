@@ -137,8 +137,9 @@ hold 20{,}000 flows and are initialised from the training period.
         labels are used.
   \item[NetGuard PS]~\cite{gupta2025netguard}: NetGuard's density-aware prior selection, with one diagonal
         Gaussian mixture (up to eight components) on the labelled memory and one on the new window. The flows with
-        the largest log-density ratio are labelled. The generative minority augmentation, which needs GPU hours
-        per cycle, is not reproduced.
+        the largest log-density ratio are labelled. If a mixture fit fails because a component collapses, it is
+        repeated with stronger covariance regularisation; this happened in 12 windows of one run (CIC-IDS2017,
+        seed 5). The generative minority augmentation, which needs GPU hours per cycle, is not reproduced.
   \item[CBRS replay]~\cite{chrysakis2020online,amalapuram2023augmented}: the class-balancing reservoir memory used
         for NIDS replay, with uniformly sampled labels, retrained whenever labels arrive.
 \end{description}
@@ -164,7 +165,7 @@ the interval excludes zero.
 Everything is implemented in Python (scikit-learn, NumPy) inside an open-source research console that stores
 the configuration, data hash, model versions, adaptation decisions and per-flow predictions of every run. Tree
 models run on a 16-core CPU; the MLP uses PyTorch 2.14.1 with CUDA 13.0 on an RTX 3060 GPU with deterministic
-kernels. In total, the article reports \TBD{N} runs.
+kernels. In total, the article reports 339 replay runs, about 61 hours of run time with three runs in parallel.
 
 \begin{table}[t]
 \centering
