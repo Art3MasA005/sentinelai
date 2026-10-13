@@ -96,6 +96,13 @@ DISPLAY = {"nova": r"\nova{} (ours)", "static": "Static", "periodic_retrain": "P
            "netguard_ps": "NetGuard PS~\\cite{gupta2025netguard}", "cbrs_replay": "CBRS replay~\\cite{chrysakis2020online}"}
 
 
+# Plain names for figures (no LaTeX).
+PLOT_NAMES = {"nova": "NOVA (ours)", "static": "Static", "periodic_retrain": "Periodic retrain",
+              "continual_replay": "Continual replay", "guarded_selective": "Guarded selective",
+              "uncertainty_al": "Uncertainty sampling", "insomnia": "INSOMNIA", "netguard_ps": "NetGuard PS",
+              "cbrs_replay": "CBRS replay"}
+
+
 def paper_rows(g: dict, order: list[str]) -> str:
     """Compact LaTeX rows for the paper: six metrics, best mean in bold, mean with std as a small subscript."""
     best = {}
@@ -222,45 +229,59 @@ def _save(fig, out: Path, name: str) -> None:
     plt.close(fig)
 
 
-def figures(data, out: Path, tag: str) -> None:
-    """Figures for one dataset (groups whose first word is `tag`)."""
-    main = next((data[g] for g in data if "main b0.10" in g), None)
-    if main:
-        # NOVA, the two strongest baselines and the static reference in colour; the rest recede to grey.
-        ranked = sorted((v for v in main if v not in ("nova", "static")),
-                        key=lambda v: -(agg(main[v], "macro_f1_ow")[0] or 0))
-        colored = [v for v in ["nova", *ranked[:2], "static"] if v in main]
-        fig, ax = plt.subplots(figsize=(9, 4))
-        _style(ax)
-        k = 5
-        ends = []
-        other_label = "other baselines"
-        for v in [*[v for v in main if v not in colored], *colored[::-1]]:
-            s = np.nanmean(np.vstack([r["series"] for r in main[v].values()]), axis=0)
-            sm = np.convolve(np.nan_to_num(s, nan=np.nanmean(s)), np.ones(k) / k, mode="valid")
-            x = np.arange(len(sm)) + k // 2
-            if v in colored:
-                c = SERIES[colored.index(v)]
-                ax.plot(x, sm, color=c, lw=2.0 if v == "nova" else 1.4, label=v, zorder=3)
-                ends.append([sm[-1], v, c])
-            else:
-                ax.plot(x, sm, color=OTHER, lw=0.9, zorder=2, label=other_label)
-                other_label = "_nolegend_"
+def _over_time(main: dict, out: Path, name: str, figsize, fs: int, direct_labels: bool) -> None:
+    """OW-F1 per window (5-window moving average, mean over seeds). NOVA, the two strongest baselines and the
+    static reference in colour; the rest recede to grey."""
+    ranked = sorted((v for v in main if v not in ("nova", "static")),
+                    key=lambda v: -(agg(main[v], "macro_f1_ow")[0] or 0))
+    colored = [v for v in ["nova", *ranked[:2], "static"] if v in main]
+    fig, ax = plt.subplots(figsize=figsize)
+    _style(ax)
+    ax.tick_params(labelsize=fs)
+    k = 5
+    ends = []
+    other_label = "other baselines"
+    for v in [*[v for v in main if v not in colored], *colored[::-1]]:
+        s = np.nanmean(np.vstack([r["series"] for r in main[v].values()]), axis=0)
+        sm = np.convolve(np.nan_to_num(s, nan=np.nanmean(s)), np.ones(k) / k, mode="valid")
+        x = np.arange(len(sm)) + k // 2
+        if v in colored:
+            c = SERIES[colored.index(v)]
+            ax.plot(x, sm, color=c, lw=2.0 if v == "nova" else 1.4, label=PLOT_NAMES.get(v, v), zorder=3)
+            ends.append([sm[-1], v, c])
+        else:
+            ax.plot(x, sm, color=OTHER, lw=0.9, zorder=2, label=other_label)
+            other_label = "_nolegend_"
+    if direct_labels:
         # Direct labels at the right edge, nudged apart so they never overlap.
         ends.sort()
         for i in range(1, len(ends)):
             ends[i][0] = max(ends[i][0], ends[i - 1][0] + 0.045)
         xmax = ax.get_xlim()[1]
         for y, v, c in ends:
-            ax.annotate(v, (xmax, y), xytext=(4, 0), textcoords="offset points", va="center", fontsize=8, color=INK)
-        ax.set_xlabel("window (4,000 flows, chronological)")
-        ax.set_ylabel("open-world macro-F1 (5-window mean)")
-        ax.set_ylim(0, 1.02)
-        ax.grid(axis="y", color=GRID, lw=0.6)
-        leg = ax.legend(ncol=5, fontsize=8, frameon=False, loc="lower center", bbox_to_anchor=(0.5, 1.0))
-        for t in leg.get_texts():
-            t.set_color(INK2)
-        _save(fig, out, f"fig_ow_f1_over_time_{tag}")
+            ax.annotate(PLOT_NAMES.get(v, v), (xmax, y), xytext=(4, 0), textcoords="offset points", va="center",
+                        fontsize=fs, color=INK)
+    ax.set_xlabel("window (4,000 flows, chronological)", fontsize=fs + 1)
+    ax.set_ylabel("OW macro-F1 (5-window mean)", fontsize=fs + 1)
+    ax.set_ylim(0, 1.02)
+    ax.grid(axis="y", color=GRID, lw=0.6)
+    handles, labels = ax.get_legend_handles_labels()
+    order = [labels.index(PLOT_NAMES.get(v, v)) for v in colored] + [labels.index("other baselines")]
+    leg = ax.legend([handles[i] for i in order], [labels[i] for i in order], ncol=5 if direct_labels else 3,
+                    fontsize=fs, frameon=False, loc="lower center", bbox_to_anchor=(0.5, 1.0),
+                    handlelength=1.5, columnspacing=1.0)
+    for t in leg.get_texts():
+        t.set_color(INK2)
+    _save(fig, out, name)
+
+
+def figures(data, out: Path, tag: str) -> None:
+    """Figures for one dataset (groups whose first word is `tag`)."""
+    main = next((data[g] for g in data if "main b0.10" in g), None)
+    if main:
+        # Wide version (full text width) and compact version (one IEEE column, drawn at its printed size).
+        _over_time(main, out, f"fig_ow_f1_over_time_{tag}", figsize=(9, 4), fs=8, direct_labels=True)
+        _over_time(main, out, f"fig_ow_f1_over_time_{tag}_col", figsize=(3.5, 2.6), fs=7, direct_labels=False)
 
     budgets = {g: data[g] for g in data if " main b" in g}
     if len(budgets) > 1:
