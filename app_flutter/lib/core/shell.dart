@@ -88,7 +88,9 @@ class _AppShellState extends ConsumerState<AppShell> {
           const Positioned.fill(child: AppBackground()),
           Row(
             children: [
-              if (showSidebar) const Sidebar(),
+              // Space for the sidebar, which is painted above the pages (last in the stack) so its edge
+              // shadow is never covered by a page layer during a transition.
+              if (showSidebar) SizedBox(width: Sidebar.extent),
               Expanded(
                 child: Column(
                   children: [
@@ -107,6 +109,7 @@ class _AppShellState extends ConsumerState<AppShell> {
               ),
             ],
           ),
+          if (showSidebar) const Positioned(left: 0, top: 0, bottom: 0, child: Sidebar()),
         ],
       ),
     );
@@ -253,6 +256,9 @@ class _PageLayerState extends State<_PageLayer> with SingleTickerProviderStateMi
 class Sidebar extends ConsumerWidget {
   const Sidebar({super.key, this.inDrawer = false});
   final bool inDrawer;
+
+  /// Horizontal space the docked sidebar takes: 240 wide, plus a 12 px inset for the floating frosted one.
+  static double get extent => AppColors.isGlass ? 252 : 240;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
