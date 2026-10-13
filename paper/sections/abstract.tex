@@ -7,8 +7,8 @@ known class with a class-conditional $k$-nearest-neighbour detector, recalibrate
 the label budget on novel and diverse traffic, propagates analyst labels to agreeing neighbours, keeps rare
 attacks in a class-balanced memory, and deploys an update or a rollback only after a hold-out check. Against
 eight methods under the same labelling cost, including re-implementations of INSOMNIA, NetGuard and
-class-balanced replay, \nova{} matches the strongest baseline on open-world macro-F1 on both CIC datasets (0.768
-against 0.756 and 0.722 against 0.722) while flagging significantly fewer benign flows on every dataset (e.g.\
+class-balanced replay, \nova{} matches the strongest baseline on open-world macro-F1 on both CIC datasets (0.752
+against 0.755 and 0.738 against 0.730) while flagging significantly fewer benign flows on every dataset (e.g.\
 2.8\% against 4.5\%). On UNSW-NB15, stale rejection thresholds pull every replay-based method below the
 never-updated model; \nova{} stays level with it, and an ablation shows that per-class recalibration is the
 reason.

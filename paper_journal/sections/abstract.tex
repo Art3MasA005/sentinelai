@@ -9,8 +9,8 @@ newly learned classes. It spends the label budget on novel, diverse traffic, pro
 agreeing neighbours, keeps rare attacks in a class-balanced memory, and deploys an update or a rollback only
 after a hold-out and a forgetting check. We compare \nova{} with eight methods, including re-implementations of
 INSOMNIA, NetGuard and class-balanced replay. At a 10\% budget it matches the strongest
-baseline on open-world macro-F1 on the CIC datasets (0.768 and 0.722) and flags significantly fewer benign flows
-on all three datasets. With 1\% of CIC-IDS2017 labelled, it leads by nine points. On UNSW-NB15, stale
+baseline on open-world macro-F1 on the CIC datasets (0.752 against 0.755 and 0.738 against 0.730) and flags significantly fewer benign flows
+on all three datasets. With 1\% of CIC-IDS2017 labelled, it leads by 8.5 points. On UNSW-NB15, stale
 rejection thresholds push the replay-based methods far below the never-updated model; an ablation shows that
 \nova{}'s per-class recalibration avoids this. We also report where it fails: short-lived attacks that resemble benign
 traffic, a neural classifier, and one dataset at the smallest budget. Code,
