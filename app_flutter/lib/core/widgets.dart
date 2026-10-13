@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'api/api_client.dart';
 import 'glass_menu.dart';
 import 'theme.dart';
+import 'toast.dart';
 
 // ---------------------------------------------------------------- layout
 
@@ -546,20 +547,5 @@ class NoRunPlaceholder extends ConsumerWidget {
   );
 }
 
-void showSnack(BuildContext context, String message, {bool error = false}) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Row(
-        children: [
-          Icon(
-            error ? Icons.error_outline : Icons.check_circle_outline,
-            color: error ? AppColors.red : AppColors.green,
-            size: 18,
-          ),
-          const SizedBox(width: 10),
-          Expanded(child: Text(message)),
-        ],
-      ),
-    ),
-  );
-}
+void showSnack(BuildContext context, String message, {bool error = false}) =>
+    showToast(context, message, error: error);
