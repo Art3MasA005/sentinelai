@@ -130,8 +130,20 @@ class _PageStack extends StatefulWidget {
 class _PageStackState extends State<_PageStack> {
   final _visited = <AppPage>[];
 
+  /// Where this area sits in the window, so a layer can repaint the window background exactly behind itself.
+  Offset _origin = Offset.zero;
+
+  void _measure() {
+    if (!mounted) return;
+    final box = context.findRenderObject() as RenderBox?;
+    if (box == null || !box.hasSize) return;
+    final o = box.localToGlobal(Offset.zero);
+    if (o != _origin) setState(() => _origin = o);
+  }
+
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) => _measure());
     if (!_visited.contains(widget.current)) _visited.add(widget.current);
     // The current page is painted last so it sits on top during the cross-fade.
     final order = [..._visited.where((p) => p != widget.current), widget.current];
@@ -139,15 +151,21 @@ class _PageStackState extends State<_PageStack> {
       fit: StackFit.expand,
       children: [
         for (final p in order)
-          _PageLayer(key: ValueKey(p), active: p == widget.current, child: widget.builder(p)),
+          _PageLayer(
+            key: ValueKey(p),
+            active: p == widget.current,
+            origin: _origin,
+            child: widget.builder(p),
+          ),
       ],
     );
   }
 }
 
 class _PageLayer extends StatefulWidget {
-  const _PageLayer({super.key, required this.active, required this.child});
+  const _PageLayer({super.key, required this.active, required this.origin, required this.child});
   final bool active;
+  final Offset origin;
   final Widget child;
 
   @override
@@ -186,7 +204,9 @@ class _PageLayerState extends State<_PageLayer> with SingleTickerProviderStateMi
   @override
   Widget build(BuildContext context) {
     final hidden = !widget.active && _c.isDismissed;
+    final fading = _c.isAnimating;
     final fade = CurvedAnimation(parent: _c, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
+    final window = MediaQuery.sizeOf(context);
     return Offstage(
       offstage: hidden,
       child: TickerMode(
@@ -195,12 +215,31 @@ class _PageLayerState extends State<_PageLayer> with SingleTickerProviderStateMi
           ignoring: !widget.active,
           child: FadeTransition(
             opacity: fade,
-            child: SlideTransition(
-              // Rise in from slightly below; the outgoing page stays in place while it fades.
-              position: widget.active
-                  ? Tween(begin: const Offset(0, 0.018), end: Offset.zero).animate(fade)
-                  : const AlwaysStoppedAnimation(Offset.zero),
-              child: RepaintBoundary(child: widget.child),
+            child: ClipRect(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // While fading, the page is drawn into its own layer, and frosted-glass cards blur whatever
+                  // that layer already holds. Without the window background inside it they blur nothing and
+                  // flash dark, so the background is repainted here, aligned with the one behind the shell.
+                  if (fading)
+                    Positioned(
+                      left: -widget.origin.dx,
+                      top: -widget.origin.dy,
+                      width: window.width,
+                      height: window.height,
+                      child: const IgnorePointer(child: AppBackground()),
+                    ),
+                  SlideTransition(
+                    key: const ValueKey('page'),
+                    // Rise in from slightly below; the outgoing page stays in place while it fades.
+                    position: widget.active
+                        ? Tween(begin: const Offset(0, 0.018), end: Offset.zero).animate(fade)
+                        : const AlwaysStoppedAnimation(Offset.zero),
+                    child: RepaintBoundary(child: widget.child),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
