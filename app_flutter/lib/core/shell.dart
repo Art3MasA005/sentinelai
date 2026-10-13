@@ -9,6 +9,7 @@ import '../features/analysis/analysis_page.dart';
 import '../features/dashboard/dashboard_page.dart';
 import '../features/drift/drift_page.dart';
 import '../features/experiments/experiments_page.dart';
+import '../features/experiments/quick_test.dart';
 import '../features/reports/reports_page.dart';
 import '../features/rules/rules_page.dart';
 import '../features/settings/settings_page.dart';
@@ -447,6 +448,8 @@ class TopBar extends ConsumerWidget {
           const Flexible(child: SizedBox(width: 320, child: _SearchBox())),
           const Spacer(),
           if (run?.isDemo == true) ...[const DemoBadge(), const SizedBox(width: 12)],
+          const _QuickTestButton(),
+          const SizedBox(width: 10),
           const _RunPicker(),
           const SizedBox(width: 8),
           const _ThemeToggle(),
@@ -489,6 +492,28 @@ class TopBar extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Opens the one-click test dialog (dataset, size, method → start; the run shows live on the Dashboard).
+class _QuickTestButton extends StatelessWidget {
+  const _QuickTestButton();
+
+  @override
+  Widget build(BuildContext context) => Tooltip(
+    message: 'Start a test run in one click',
+    child: FilledButton.icon(
+      onPressed: () => showQuickTest(context),
+      style: FilledButton.styleFrom(
+        backgroundColor: AppColors.blue,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        textStyle: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
+      ),
+      icon: const Icon(Icons.bolt_rounded, size: 17),
+      label: const Text('Quick test'),
+    ),
+  );
 }
 
 class _SearchBox extends ConsumerStatefulWidget {
