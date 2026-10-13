@@ -31,17 +31,14 @@ over CBRS replay (0.756, 0.838) is within the bootstrap uncertainty (per-window 
 $[-0.5, +4.3]$). It is significantly ahead of every other method (by 6.8 to 22.8 points). CBRS detects slightly
 more attacks (detection F1 0.861 against 0.854), but \nova{} flags significantly fewer benign flows (4.5\% against
 2.8\% pooled; per-window difference $-4.0$, CI $[-8.8, -0.5]$): it sends 38\% fewer benign flows to the analyst.
-\Cref{fig:time-cic} shows where the methods differ. Every method drops when a new attack class starts. CBRS
-replay recovers faster from the first DoS attacks (windows 8--12), \nova{} from most later ones, most visibly in
-the last ten windows.
 
-\begin{figure*}[t]
+\begin{figure}[t]
 \centering
-\IfFileExists{\results{fig_ow_f1_over_time_CIC17.pdf}}{\includegraphics[width=0.8\textwidth]{fig_ow_f1_over_time_CIC17.pdf}}{\TBD{figure}}
-\caption{OW macro-F1 per window on CIC-IDS2017 (mean of three seeds, 5-window moving average). \nova{}, the two
-strongest baselines and the static model in colour, the other baselines in grey.}
-\label{fig:time-cic}
-\end{figure*}
+\IfFileExists{\results{fig_ow_f1_over_time_UNSW_col.pdf}}{\includegraphics[width=\columnwidth]{fig_ow_f1_over_time_UNSW_col.pdf}}{\TBD{figure}}
+\caption{OW macro-F1 per window on UNSW-NB15 (mean of three seeds, 5-window moving average). Replay-based
+baselines (grey) fall below the static model.}
+\label{fig:time-unsw}
+\end{figure}
 
 \textbf{CSE-CIC-IDS2018} (\cref{tab:ids18}). \nova{} and CBRS replay tie on OW-F1 (0.722) and AUT (0.869;
 difference CI $[-1.9, +1.9]$). \nova{} has the higher detection F1 (0.815 against 0.788), a significantly lower
@@ -60,13 +57,18 @@ other method. Without the calibration store, \nova{} drops to 0.418 and zero F1 
 INSOMNIA's self-training has the highest false-positive rate on both CIC datasets (12.4\%, 25.7\%):
 pseudo-label errors on unseen classes are fed back into training.
 
-\begin{figure}[t]
+\Cref{fig:time-cic} shows where the methods differ on CIC-IDS2017. Every method drops when a new attack class
+starts. CBRS replay recovers faster from the first DoS attacks (windows 8--12), \nova{} from most later ones,
+most visibly in the last ten windows.
+
+\begin{figure*}[t]
 \centering
-\IfFileExists{\results{fig_ow_f1_over_time_UNSW_col.pdf}}{\includegraphics[width=\columnwidth]{fig_ow_f1_over_time_UNSW_col.pdf}}{\TBD{figure}}
-\caption{OW macro-F1 per window on UNSW-NB15 (mean of three seeds, 5-window moving average). Replay-based
-baselines (grey) fall below the static model.}
-\label{fig:time-unsw}
-\end{figure}
+\IfFileExists{\results{fig_ow_f1_over_time_CIC17.pdf}}{\includegraphics[width=0.8\textwidth]{fig_ow_f1_over_time_CIC17.pdf}}{\TBD{figure}}
+\caption{OW macro-F1 per window on CIC-IDS2017 (mean of three seeds, 5-window moving average). \nova{}, the two
+strongest baselines and the static model in colour, the other baselines in grey.}
+\label{fig:time-cic}
+\end{figure*}
+
 
 \subsection{Label budget}
 With 1\% of each window labelled (\cref{tab:budget}), \nova{} leads CBRS replay by 9.0 points on CIC-IDS2017
