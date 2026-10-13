@@ -547,5 +547,4 @@ class NoRunPlaceholder extends ConsumerWidget {
   );
 }
 
-void showSnack(BuildContext context, String message, {bool error = false}) =>
-    showToast(context, message, error: error);
+void showSnack(BuildContext context, String message, {bool error = false}) => showToast(context, message, error: error);

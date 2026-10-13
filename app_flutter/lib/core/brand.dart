@@ -55,12 +55,7 @@ class SentinelWordmark extends StatelessWidget {
       SizedBox(width: markSize * 0.42),
       Text(
         'SentinelAI',
-        style: TextStyle(
-          fontSize: fontSize,
-          fontWeight: FontWeight.w600,
-          letterSpacing: -0.4,
-          color: AppColors.text,
-        ),
+        style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w600, letterSpacing: -0.4, color: AppColors.text),
       ),
     ],
   );

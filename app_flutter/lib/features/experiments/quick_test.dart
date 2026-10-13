@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/models.dart';
+import '../../core/dialogs.dart';
 import '../../core/format.dart';
 import '../../core/state.dart';
 import '../../core/theme.dart';
@@ -10,22 +11,8 @@ import 'experiments_page.dart' show activePolicyProvider, compareSelectionProvid
 
 /// One-click test run from anywhere in the app: pick a dataset and a size, press Start, and the run is
 /// created, started and shown live on the Dashboard. Everything else uses the defaults and the active policy.
-Future<void> showQuickTest(BuildContext context) => showGeneralDialog<void>(
-  context: context,
-  barrierDismissible: true,
-  barrierLabel: 'Close',
-  barrierColor: const Color(0x55000000),
-  transitionDuration: const Duration(milliseconds: 260),
-  pageBuilder: (_, _, _) => const _QuickTestDialog(),
-  // Scale and slide only: an opacity layer would make the frosted panel flash dark while it opens.
-  transitionBuilder: (_, a, _, child) {
-    final c = CurvedAnimation(parent: a, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
-    return SlideTransition(
-      position: Tween(begin: const Offset(0, 0.04), end: Offset.zero).animate(c),
-      child: ScaleTransition(scale: Tween(begin: 0.96, end: 1.0).animate(c), child: child),
-    );
-  },
-);
+Future<void> showQuickTest(BuildContext context) =>
+    showFrostedDialog<void>(context: context, builder: (_) => const _QuickTestDialog());
 
 /// Replay sizes offered in the dialog: label, flows, hint.
 const _sizes = [('Fast', 40000, '≈ 2–4 min'), ('Standard', 120000, '≈ 5–10 min'), ('Paper', 400000, '≈ 15–30 min')];
