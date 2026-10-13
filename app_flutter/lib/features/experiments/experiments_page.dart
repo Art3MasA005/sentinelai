@@ -525,27 +525,16 @@ class _RunsTable extends ConsumerWidget {
   }
 
   Future<void> _delete(BuildContext context, WidgetRef ref, Run run) async {
-    final ok = await showFrostedDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Delete ${runLabel(run.seq)}?', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-        content: Text(
+    final ok = await showConfirmDialog(
+      context,
+      title: 'Delete ${runLabel(run.seq)}?',
+      message:
           'Removes its predictions, events, alerts, model history and the files in experiments/results/${run.id}. '
           'This cannot be undone.',
-          style: const TextStyle(fontSize: 13),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AppColors.red),
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+      confirmLabel: 'Delete',
+      destructive: true,
     );
-    if (ok != true) return;
+    if (!ok) return;
     try {
       await ref.read(apiProvider).deleteRun(run.id);
       final sel = ref.read(compareSelectionProvider);

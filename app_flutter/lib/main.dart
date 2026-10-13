@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/auth.dart';
+import 'core/dialogs.dart';
 import 'core/shell.dart';
 import 'core/state.dart';
 import 'core/theme.dart';
@@ -40,6 +41,8 @@ class SentinelApp extends ConsumerWidget {
       title: 'SentinelAI',
       debugShowCheckedModeBanner: false,
       theme: buildTheme(palette),
+      // Dialogs blur a snapshot of everything below them (see core/dialogs.dart).
+      builder: (context, child) => RepaintBoundary(key: appSnapshotKey, child: child),
       home: const AuthGate(),
     );
   }
