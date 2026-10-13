@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/auth.dart';
+import '../../core/brand.dart';
 import '../../core/state.dart';
 import '../../core/theme.dart';
 
@@ -277,42 +278,6 @@ class _BrandIntro extends StatelessWidget {
       },
     );
   }
-}
-
-/// Brand mark: three replay windows, the middle one shifted — drift.
-class SentinelMark extends StatelessWidget {
-  const SentinelMark({super.key, this.size = 32});
-  final double size;
-
-  @override
-  Widget build(BuildContext context) => SizedBox(
-    width: size,
-    height: size,
-    child: CustomPaint(
-      painter: _MarkPainter(ink: AppColors.text, accent: AppColors.blue),
-    ),
-  );
-}
-
-class _MarkPainter extends CustomPainter {
-  _MarkPainter({required this.ink, required this.accent});
-  final Color ink;
-  final Color accent;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width, h = size.height;
-    final bar = h * 0.2, gap = (h - 3 * bar) / 2;
-    final r = Radius.circular(bar / 2);
-    void draw(double top, double left, double width, Color c) =>
-        canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(left, top, width, bar), r), Paint()..color = c);
-    draw(0, 0, w * 0.78, ink);
-    draw(bar + gap, w * 0.22, w * 0.78, accent);
-    draw(2 * (bar + gap), 0, w * 0.6, ink);
-  }
-
-  @override
-  bool shouldRepaint(_MarkPainter old) => old.ink != ink || old.accent != accent;
 }
 
 class _Status extends StatelessWidget {
