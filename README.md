@@ -9,6 +9,10 @@ used to evaluate it.
 
 > SentinelAI only **replays recorded datasets offline**. It does not capture live traffic and blocks nothing.
 
+![SentinelAI dashboard: flows, attacks, unknown flows and drift for one replayed run](docs/screenshots/dashboard.webp)
+
+More screenshots: [Using the app](#3-using-the-app).
+
 ---
 
 ## Contents
@@ -127,6 +131,19 @@ In the app, press **⚡ Quick test** in the top bar, choose the demo dataset and
 
 The run picker in the top bar chooses which run every page shows. The sun/moon button switches between the dark
 and the light theme.
+
+### Screenshots
+
+All screenshots are from the Windows app (full screen, light theme) and show one NOVA run on CIC-IDS2017 (a Quick test).
+
+| | |
+|---|---|
+| **Analysis**: per-window macro-F1, unknown recall and false positives | **Drift Monitor**: drift score against its threshold, and every detection |
+| ![Analysis page](docs/screenshots/analysis.webp) | ![Drift Monitor page](docs/screenshots/drift.webp) |
+| **Adaptation Center**: each candidate model, the hold-out check and the decision | **Alerts**: flows reported as attacks or unknown, waiting for triage |
+| ![Adaptation Center page](docs/screenshots/adaptation.webp) | ![Alerts page](docs/screenshots/alerts.webp) |
+| **Traffic Monitor**: every replayed flow with its prediction and score | **Experiments**: create runs and batches, and follow every run |
+| ![Traffic Monitor page](docs/screenshots/traffic.webp) | ![Experiments page](docs/screenshots/experiments.webp) |
 
 ---
 
