@@ -146,9 +146,23 @@ final systemProvider = FutureProvider<SystemStatus>((ref) {
 
 // ---------------------------------------------------------------- runs
 
+/// Every run, newest first. The API serves at most 200 per page, so later pages are fetched too.
 final runsProvider = FutureProvider<List<Run>>((ref) async {
   ref.watch(refreshTickProvider);
-  return (await ref.watch(apiProvider).runs()).items;
+  final api = ref.watch(apiProvider);
+  final first = await api.runs();
+  final seen = <String>{};
+  final runs = [
+    for (final r in first.items)
+      if (seen.add(r.id)) r,
+  ];
+  for (var page = 2; (page - 1) * first.pageSize < first.total; page++) {
+    // A run created between two requests shifts the pages by one; `seen` drops the repeat.
+    for (final r in (await api.runs(page: page)).items) {
+      if (seen.add(r.id)) runs.add(r);
+    }
+  }
+  return runs;
 });
 
 class SelectedRun extends Notifier<String?> {
