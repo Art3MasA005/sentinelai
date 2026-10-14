@@ -21,6 +21,16 @@ class CompareSelection extends Notifier<Set<String>> {
 
 final compareSelectionProvider = NotifierProvider<CompareSelection, Set<String>>(CompareSelection.new);
 
+/// Page of the runs table (25 runs per page).
+class _RunsPage extends Notifier<int> {
+  @override
+  int build() => 1;
+
+  void set(int page) => state = page;
+}
+
+final _runsPageProvider = NotifierProvider<_RunsPage, int>(_RunsPage.new);
+
 final activePolicyProvider = FutureProvider<Json>((ref) => ref.watch(apiProvider).activePolicy());
 
 const _modelKinds = {
@@ -584,6 +594,10 @@ class _RunsTable extends ConsumerWidget {
       onPressed: onTap,
       icon: Icon(icon, color: color ?? AppColors.textSecondary),
     );
+    const perPage = 25;
+    final pages = runs.isEmpty ? 1 : (runs.length + perPage - 1) ~/ perPage;
+    final page = ref.watch(_runsPageProvider).clamp(1, pages);
+    final shown = runs.skip((page - 1) * perPage).take(perPage).toList();
     return Panel(
       title: 'Experiment runs',
       subtitle: 'Click a row to make it the run shown on every page · tick runs to compare them in Reports',
@@ -592,101 +606,113 @@ class _RunsTable extends ConsumerWidget {
         icon: const Icon(Icons.compare_arrows_rounded, size: 18),
         label: Text('Compare selected (${compare.length})'),
       ),
-      child: SentinelTable(
-        rowHeight: 52,
-        columns: const [
-          TableCol('', width: 44),
-          TableCol('Run ID', flex: 2),
-          TableCol('Method', flex: 2),
-          TableCol('Dataset', flex: 2),
-          TableCol('Status', flex: 2),
-          TableCol('Macro F1'),
-          TableCol('Started'),
-          TableCol('Actions', flex: 2),
-        ],
-        emptyText: 'No runs yet — create one above.',
-        selected: runs.indexWhere((r) => r.id == current),
-        onTap: (i) => ref.read(selectedRunIdProvider.notifier).select(runs[i].id),
-        rows: [
-          for (final r in runs)
-            [
-              Checkbox(
-                value: compare.contains(r.id),
-                onChanged: r.status == 'completed'
-                    ? (_) => ref.read(compareSelectionProvider.notifier).toggle(r.id)
-                    : null,
-              ),
-              Row(
-                children: [
-                  Flexible(
-                    child: Text(
-                      runLabel(r.seq),
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                  if (r.groupId != null) ...[
-                    const SizedBox(width: 6),
-                    Tooltip(
-                      message: 'Batch ${r.groupId} · seed ${r.seed}',
-                      child: Icon(Icons.layers_outlined, size: 14, color: AppColors.textSecondary),
-                    ),
-                  ],
-                  if (r.isDemo) ...[const SizedBox(width: 8), const DemoBadge(compact: true)],
-                ],
-              ),
-              Text(methodName(r.method), overflow: TextOverflow.ellipsis),
-              Text(r.datasetId, overflow: TextOverflow.ellipsis),
-              r.isActive
-                  ? Row(
-                      children: [
-                        runStatusLabel(r.status),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: LinearProgressIndicator(
-                              value: r.totalWindows == 0 ? null : r.window / r.totalWindows,
-                              minHeight: 6,
-                              backgroundColor: AppColors.track,
-                              valueColor: AlwaysStoppedAnimation(runStatusColor(r.status)),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text('${r.window}/${r.totalWindows}', style: TextStyles.secondary),
-                      ],
-                    )
-                  : Tooltip(message: r.error ?? '', child: runStatusLabel(r.status)),
-              Text(fmtNum(r.overall['macro_f1'] as num?)),
-              Text(fmtRelativeDay(r.startedAt ?? r.createdAt, utc: utc)),
-              Row(
-                children: [
-                  if (r.status == 'created' || r.status == 'failed' || r.status == 'cancelled')
-                    act(
-                      Icons.play_arrow_rounded,
-                      'Start',
-                      () => _control(context, ref, r, 'start'),
-                      color: AppColors.green,
-                    ),
-                  if (r.status == 'running')
-                    act(Icons.pause_rounded, 'Pause', () => _control(context, ref, r, 'pause')),
-                  if (r.status == 'paused') ...[
-                    act(
-                      Icons.play_arrow_rounded,
-                      'Resume',
-                      () => _control(context, ref, r, 'resume'),
-                      color: AppColors.green,
-                    ),
-                    act(Icons.skip_next_rounded, 'Step one window', () => _control(context, ref, r, 'step')),
-                  ],
-                  if (r.isBusy || r.status == 'created')
-                    act(Icons.stop_rounded, 'Cancel', () => _control(context, ref, r, 'cancel'), color: AppColors.red),
-                  act(Icons.article_outlined, 'Logs', () => _logs(context, ref, r)),
-                  if (!r.isBusy) act(Icons.delete_outline, 'Delete run', () => _delete(context, ref, r)),
-                ],
-              ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SentinelTable(
+            rowHeight: 52,
+            columns: const [
+              TableCol('', width: 44),
+              TableCol('Run ID', flex: 2),
+              TableCol('Method', flex: 2),
+              TableCol('Dataset', flex: 2),
+              TableCol('Status', flex: 2),
+              TableCol('Macro F1'),
+              TableCol('Started'),
+              TableCol('Actions', flex: 2),
             ],
+            emptyText: 'No runs yet — create one above.',
+            selected: shown.indexWhere((r) => r.id == current),
+            onTap: (i) => ref.read(selectedRunIdProvider.notifier).select(shown[i].id),
+            rows: [
+              for (final r in shown)
+                [
+                  Checkbox(
+                    value: compare.contains(r.id),
+                    onChanged: r.status == 'completed'
+                        ? (_) => ref.read(compareSelectionProvider.notifier).toggle(r.id)
+                        : null,
+                  ),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          runLabel(r.seq),
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                      if (r.groupId != null) ...[
+                        const SizedBox(width: 6),
+                        Tooltip(
+                          message: 'Batch ${r.groupId} · seed ${r.seed}',
+                          child: Icon(Icons.layers_outlined, size: 14, color: AppColors.textSecondary),
+                        ),
+                      ],
+                      if (r.isDemo) ...[const SizedBox(width: 8), const DemoBadge(compact: true)],
+                    ],
+                  ),
+                  Text(methodName(r.method), overflow: TextOverflow.ellipsis),
+                  Text(r.datasetId, overflow: TextOverflow.ellipsis),
+                  r.isActive
+                      ? Row(
+                          children: [
+                            runStatusLabel(r.status),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(4),
+                                child: LinearProgressIndicator(
+                                  value: r.totalWindows == 0 ? null : r.window / r.totalWindows,
+                                  minHeight: 6,
+                                  backgroundColor: AppColors.track,
+                                  valueColor: AlwaysStoppedAnimation(runStatusColor(r.status)),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text('${r.window}/${r.totalWindows}', style: TextStyles.secondary),
+                          ],
+                        )
+                      : Tooltip(message: r.error ?? '', child: runStatusLabel(r.status)),
+                  Text(fmtNum(r.overall['macro_f1'] as num?)),
+                  Text(fmtRelativeDay(r.startedAt ?? r.createdAt, utc: utc)),
+                  Row(
+                    children: [
+                      if (r.status == 'created' || r.status == 'failed' || r.status == 'cancelled')
+                        act(
+                          Icons.play_arrow_rounded,
+                          'Start',
+                          () => _control(context, ref, r, 'start'),
+                          color: AppColors.green,
+                        ),
+                      if (r.status == 'running')
+                        act(Icons.pause_rounded, 'Pause', () => _control(context, ref, r, 'pause')),
+                      if (r.status == 'paused') ...[
+                        act(
+                          Icons.play_arrow_rounded,
+                          'Resume',
+                          () => _control(context, ref, r, 'resume'),
+                          color: AppColors.green,
+                        ),
+                        act(Icons.skip_next_rounded, 'Step one window', () => _control(context, ref, r, 'step')),
+                      ],
+                      if (r.isBusy || r.status == 'created')
+                        act(
+                          Icons.stop_rounded,
+                          'Cancel',
+                          () => _control(context, ref, r, 'cancel'),
+                          color: AppColors.red,
+                        ),
+                      act(Icons.article_outlined, 'Logs', () => _logs(context, ref, r)),
+                      if (!r.isBusy) act(Icons.delete_outline, 'Delete run', () => _delete(context, ref, r)),
+                    ],
+                  ),
+                ],
+            ],
+          ),
+          if (pages > 1)
+            Pager(page: page, pages: pages, total: runs.length, onPage: ref.read(_runsPageProvider.notifier).set),
         ],
       ),
     );
